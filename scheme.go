@@ -91,7 +91,10 @@ func (s colorScheme) exportToContext() (map[string]interface{}, error) {
 		ret[baseKey+"-hex-g"] = strconv.FormatUint(uint64(g), 16)
 		ret[baseKey+"-hex-b"] = strconv.FormatUint(uint64(b), 16)
 
-		// TODO: Missing hsl
+		h, c, l := baseVal.Hcl()
+		ret[baseKey+"-hcl-h"] = h
+		ret[baseKey+"-hcl-c"] = c
+		ret[baseKey+"-hcl-l"] = l
 	}
 
 	if len(errs) != 0 {

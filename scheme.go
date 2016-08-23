@@ -10,7 +10,6 @@ import (
 
 	yaml "gopkg.in/yaml.v2"
 
-	"github.com/Sirupsen/logrus"
 	slugify "github.com/metal3d/go-slugify"
 )
 
@@ -19,7 +18,8 @@ var bases = []string{
 	"08", "09", "0A", "0B", "0C", "0D", "0E", "0F",
 }
 
-type colorScheme struct {
+type scheme struct {
+	Name string `yaml:"-"`
 	Slug string `yaml:"-"`
 
 	Scheme string `yaml:"scheme"`
@@ -29,8 +29,8 @@ type colorScheme struct {
 	Colors map[string]color `yaml:",inline"`
 }
 
-func schemeFromFile(fileName string) (*colorScheme, error) {
-	ret := &colorScheme{}
+func schemeFromFile(fileName string) (*scheme, error) {
+	ret := &scheme{}
 
 	ret.Slug = path.Base(fileName)
 
@@ -50,36 +50,49 @@ func schemeFromFile(fileName string) (*colorScheme, error) {
 		return nil, err
 	}
 
+	// Now that we have the data, we can sanitize it
+	var errored bool
+	if ret.Scheme == "" {
+		fmt.Println(errors.New("Scheme name cannot be empty"))
+		errored = true
+	}
+
+	// Author is a warning because there appear to be some themes
+	// without them.
+	if ret.Author == "" {
+		fmt.Println(errors.New("Scheme author cannot be empty"))
+	}
+
+	if len(bases) != len(ret.Colors) {
+		fmt.Println(errors.New("Wrong number of colors in scheme"))
+		errored = true
+	}
+
+	for _, base := range bases {
+		baseKey := "base" + base
+		if _, ok := ret.Colors[baseKey]; !ok {
+			fmt.Println(fmt.Errorf("Scheme missing %q", baseKey))
+			continue
+		}
+	}
+
+	if errored {
+		return nil, errors.New("Failed to parse scheme")
+	}
+
 	return ret, nil
 }
 
-func (s colorScheme) exportToContext() (map[string]interface{}, error) {
-	var errs []error
-	if s.Scheme == "" {
-		errs = append(errs, errors.New("Scheme name cannot be empty"))
-	}
-
-	if s.Author == "" {
-		//errs = append(errs, errors.New("Scheme author cannot be empty"))
-	}
-
+func (s *scheme) mustacheContext() map[string]interface{} {
 	ret := map[string]interface{}{
 		"scheme-name":   s.Scheme,
 		"scheme-author": s.Author,
 		"scheme-slug":   slugify.Marshal(s.Scheme),
 	}
 
-	if len(bases) != 16 {
-		errs = append(errs, errors.New("Wrong number of colors"))
-	}
-
 	for _, base := range bases {
 		baseKey := "base" + base
-		baseVal, ok := s.Colors[baseKey]
-		if !ok {
-			errs = append(errs, fmt.Errorf("Missing %s in scheme", baseKey))
-			continue
-		}
+		baseVal := s.Colors[baseKey]
 
 		ret[baseKey+"-hex"] = baseVal.Hex()
 
@@ -97,13 +110,5 @@ func (s colorScheme) exportToContext() (map[string]interface{}, error) {
 		ret[baseKey+"-hcl-l"] = l
 	}
 
-	if len(errs) != 0 {
-		for _, innerErr := range errs {
-			logrus.Println(innerErr)
-		}
-
-		return nil, errors.New("Failed to parse scheme")
-	}
-
-	return ret, nil
+	return ret
 }

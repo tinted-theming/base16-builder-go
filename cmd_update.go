@@ -3,8 +3,10 @@ package main
 import (
 	"os"
 	"path"
+	"strings"
 
 	"github.com/Masterminds/vcs"
+	"github.com/Sirupsen/logrus"
 	"github.com/Unknwon/com"
 	"github.com/spf13/cobra"
 )
@@ -23,9 +25,9 @@ var updateCmd = &cobra.Command{
 	Short: "Pull in updates from the source repos",
 	Run: func(cmd *cobra.Command, args []string) {
 		log.Info("Updating sources")
-		dirs, err := downloadSourceList(sourcesFile, sourcesDir)
-		if err != nil {
-			log.Fatal(err)
+		dirs, ok := downloadSourceList(sourcesFile, sourcesDir)
+		if !ok {
+			log.Fatal("Failed to update sources")
 		}
 
 		for _, dir := range []string{"schemes", "templates"} {
@@ -35,70 +37,81 @@ var updateCmd = &cobra.Command{
 		}
 
 		log.Info("Updating schemes")
-		_, err = downloadSourceList(path.Join(sourcesDir, "schemes", "list.yaml"), schemesDir)
-		if err != nil {
-			handleVcsError(err)
+		_, ok = downloadSourceList(path.Join(sourcesDir, "schemes", "list.yaml"), schemesDir)
+		if !ok {
+			log.Fatal("Failed to update schemes")
 		}
 
 		log.Info("Updating templates")
-		_, err = downloadSourceList(path.Join(sourcesDir, "templates", "list.yaml"), templatesDir)
-		if err != nil {
-			handleVcsError(err)
+		_, ok = downloadSourceList(path.Join(sourcesDir, "templates", "list.yaml"), templatesDir)
+		if !ok {
+			log.Fatal("Failed to update templates")
 		}
 	},
 }
 
-func handleVcsError(err error) {
-	if lErr, ok := err.(*vcs.LocalError); ok {
-		log.Error(lErr)
-		log.Fatal(lErr.Original())
-	}
-
-	if rErr, ok := err.(*vcs.RemoteError); ok {
-		log.Error(rErr)
-		log.Fatal(rErr.Original())
-	}
-
-	log.Fatal(err)
-}
-
-func downloadSourceList(sourceFile, targetDir string) ([]string, error) {
+func downloadSourceList(sourceFile, targetDir string) ([]string, bool) {
 	sources, err := readSourcesList(sourceFile)
 	if err != nil {
-		return nil, err
+		log.Error(err)
+		return nil, false
 	}
 
 	err = os.MkdirAll(targetDir, 0777)
 	if err != nil {
-		return nil, err
+		log.Error(err)
+		return nil, false
 	}
 
+	ok := true
 	var ret []string
 	for _, source := range sources {
 		ret = append(ret, source.Key.(string))
 
-		sourceDir := path.Join(targetDir, source.Key.(string))
+		key := source.Key.(string)
+
+		sourceDir := path.Join(targetDir, key)
 		sourceLocation := source.Value.(string)
 
 		repo, err := vcs.NewRepo(sourceLocation, sourceDir)
 		if err != nil {
-			return nil, err
+			log.Error(err)
+			ok = false
+			continue
 		}
 
 		if ok := repo.CheckLocal(); !ok {
 			log.Debugf("Cloning %q to %q", sourceLocation, sourceDir)
 			err = repo.Get()
 			if err != nil {
-				return nil, err
+				handleVcsError(log.WithField("source", key), err)
+				ok = false
+				continue
 			}
 		} else {
 			log.Debugf("Updating %q", sourceDir)
 			err = repo.Update()
 			if err != nil {
-				return nil, err
+				handleVcsError(log.WithField("source", key), err)
+				ok = false
+				continue
 			}
 		}
 	}
 
-	return ret, nil
+	return ret, ok
+}
+
+func handleVcsError(logger *logrus.Entry, err error) {
+	logger.Error(err)
+
+	if lErr, ok := err.(*vcs.LocalError); ok {
+		logger.Error(strings.TrimSpace(lErr.Out()))
+		logger.Error(lErr.Original())
+	}
+
+	if rErr, ok := err.(*vcs.RemoteError); ok {
+		logger.Error(strings.TrimSpace(rErr.Out()))
+		logger.Error(rErr.Original())
+	}
 }

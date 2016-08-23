@@ -73,26 +73,28 @@ func downloadSourceList(sourceFile, targetDir string) ([]string, bool) {
 		sourceDir := path.Join(targetDir, key)
 		sourceLocation := source.Value.(string)
 
+		logger := log.WithField("source", key)
+
 		repo, err := vcs.NewRepo(sourceLocation, sourceDir)
 		if err != nil {
-			log.Error(err)
+			logger.Error(err)
 			ok = false
 			continue
 		}
 
 		if ok := repo.CheckLocal(); !ok {
-			log.Debugf("Cloning %q to %q", sourceLocation, sourceDir)
+			logger.Debugf("Cloning %q to %q", sourceLocation, sourceDir)
 			err = repo.Get()
 			if err != nil {
-				handleVcsError(log.WithField("source", key), err)
+				handleVcsError(logger, err)
 				ok = false
 				continue
 			}
 		} else {
-			log.Debugf("Updating %q", sourceDir)
+			logger.Debugf("Updating %q", sourceDir)
 			err = repo.Update()
 			if err != nil {
-				handleVcsError(log.WithField("source", key), err)
+				handleVcsError(logger, err)
 				ok = false
 				continue
 			}

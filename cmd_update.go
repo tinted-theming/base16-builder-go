@@ -11,12 +11,16 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var sourcesFile string
+var (
+	sourcesFile  string
+	ignoreErrors bool
+)
 
 func init() {
 	RootCmd.AddCommand(updateCmd)
 
 	updateCmd.Flags().StringVar(&sourcesFile, "sources", "sources.yaml", "File with base16 sources")
+	updateCmd.Flags().BoolVar(&ignoreErrors, "ignore-errors", false, "Don't exit on error if possible to continue")
 }
 
 // buildCmd represents the build command
@@ -36,16 +40,30 @@ var updateCmd = &cobra.Command{
 			}
 		}
 
+		var errored bool
+
 		log.Info("Updating schemes")
 		_, ok = downloadSourceList(path.Join(sourcesDir, "schemes", "list.yaml"), schemesDir)
 		if !ok {
-			log.Fatal("Failed to update schemes")
+			if !ignoreErrors {
+				log.Fatal("Failed to update schemes")
+			}
+
+			errored = true
 		}
 
 		log.Info("Updating templates")
 		_, ok = downloadSourceList(path.Join(sourcesDir, "templates", "list.yaml"), templatesDir)
 		if !ok {
-			log.Fatal("Failed to update templates")
+			if !ignoreErrors {
+				log.Fatal("Failed to update templates")
+			}
+
+			errored = true
+		}
+
+		if errored {
+			log.Fatal("An error occured while updating")
 		}
 	},
 }

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"os"
 	"path"
 
@@ -23,27 +22,25 @@ var updateCmd = &cobra.Command{
 	Use:   "update",
 	Short: "Pull in updates from the source repos",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Updating sources")
+		log.Info("Updating sources")
 		dirs, err := downloadSourceList(sourcesFile, sourcesDir)
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			log.Fatal(err)
 		}
 
 		for _, dir := range []string{"schemes", "templates"} {
 			if !com.IsSliceContainsStr(dirs, dir) {
-				fmt.Printf("%q location is missing from sources file", dir)
-				os.Exit(1)
+				log.Fatalf("%q location is missing from sources file", dir)
 			}
 		}
 
-		fmt.Println("Updating schemes")
+		log.Info("Updating schemes")
 		_, err = downloadSourceList(path.Join(sourcesDir, "schemes", "list.yaml"), schemesDir)
 		if err != nil {
 			handleVcsError(err)
 		}
 
-		fmt.Println("Updating templates")
+		log.Info("Updating templates")
 		_, err = downloadSourceList(path.Join(sourcesDir, "templates", "list.yaml"), templatesDir)
 		if err != nil {
 			handleVcsError(err)
@@ -53,14 +50,16 @@ var updateCmd = &cobra.Command{
 
 func handleVcsError(err error) {
 	if lErr, ok := err.(*vcs.LocalError); ok {
-		fmt.Println(lErr.Original())
-	} else if rErr, ok := err.(*vcs.RemoteError); ok {
-		fmt.Println(rErr.Original())
-	} else {
-		fmt.Println(err)
+		log.Error(lErr)
+		log.Fatal(lErr.Original())
 	}
 
-	os.Exit(1)
+	if rErr, ok := err.(*vcs.RemoteError); ok {
+		log.Error(rErr)
+		log.Fatal(rErr.Original())
+	}
+
+	log.Fatal(err)
 }
 
 func downloadSourceList(sourceFile, targetDir string) ([]string, error) {
@@ -87,13 +86,13 @@ func downloadSourceList(sourceFile, targetDir string) ([]string, error) {
 		}
 
 		if ok := repo.CheckLocal(); !ok {
-			fmt.Printf("Cloning %q from %q\n", sourceLocation, sourceDir)
+			log.Debugf("Cloning %q to %q", sourceLocation, sourceDir)
 			err = repo.Get()
 			if err != nil {
 				return nil, err
 			}
 		} else {
-			fmt.Printf("Updating %q\n", sourceDir)
+			log.Debugf("Updating %q", sourceDir)
 			err = repo.Update()
 			if err != nil {
 				return nil, err

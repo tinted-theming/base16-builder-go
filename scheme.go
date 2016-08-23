@@ -1,16 +1,13 @@
 package main
 
 import (
-	"errors"
-	"fmt"
 	"io/ioutil"
 	"path"
+	"path/filepath"
 	"strconv"
 	"strings"
 
 	yaml "gopkg.in/yaml.v2"
-
-	slugify "github.com/metal3d/go-slugify"
 )
 
 var bases = []string{
@@ -29,65 +26,68 @@ type scheme struct {
 	Colors map[string]color `yaml:",inline"`
 }
 
-func schemeFromFile(fileName string) (*scheme, error) {
+func schemeFromFile(fileName string) (*scheme, bool) {
 	ret := &scheme{}
 
 	ret.Slug = path.Base(fileName)
 
 	if !strings.HasSuffix(ret.Slug, ".yaml") {
-		return nil, errors.New("Scheme name must end in .yaml")
+		log.Error("Scheme must end in .yaml")
+		return nil, false
 	}
 
+	// Chop off the .yaml so we can have a slugified name.
 	ret.Slug = ret.Slug[:len(ret.Slug)-5]
+
+	logger := log.WithField("scheme", ret.Slug)
 
 	data, err := ioutil.ReadFile(fileName)
 	if err != nil {
-		return nil, err
+		logger.Error(err)
+		return nil, false
 	}
 
 	err = yaml.Unmarshal(data, ret)
 	if err != nil {
-		return nil, err
+		logger.Error(err)
+		return nil, false
 	}
 
 	// Now that we have the data, we can sanitize it
-	var errored bool
+	ok := true
 	if ret.Scheme == "" {
-		fmt.Println(errors.New("Scheme name cannot be empty"))
-		errored = true
+		logger.Error("Scheme name cannot be empty")
+		ok = false
 	}
 
 	// Author is a warning because there appear to be some themes
 	// without them.
 	if ret.Author == "" {
-		fmt.Println(errors.New("Scheme author cannot be empty"))
+		logger.Warn("Scheme author should not be empty")
 	}
 
 	if len(bases) != len(ret.Colors) {
-		fmt.Println(errors.New("Wrong number of colors in scheme"))
-		errored = true
+		logger.Error("Wrong number of colors in scheme")
+		ok = false
 	}
 
 	for _, base := range bases {
 		baseKey := "base" + base
 		if _, ok := ret.Colors[baseKey]; !ok {
-			fmt.Println(fmt.Errorf("Scheme missing %q", baseKey))
+			logger.Errorf("Scheme missing %q", baseKey)
+			ok = false
 			continue
 		}
 	}
 
-	if errored {
-		return nil, errors.New("Failed to parse scheme")
-	}
-
-	return ret, nil
+	return ret, ok
 }
 
 func (s *scheme) mustacheContext() map[string]interface{} {
 	ret := map[string]interface{}{
 		"scheme-name":   s.Scheme,
 		"scheme-author": s.Author,
-		"scheme-slug":   slugify.Marshal(s.Scheme),
+		"scheme-slug":   s.Slug,
 	}
 
 	for _, base := range bases {
@@ -111,4 +111,52 @@ func (s *scheme) mustacheContext() map[string]interface{} {
 	}
 
 	return ret
+}
+
+func loadSchemes(schemeFile string) ([]*scheme, bool) {
+	schemeItems, err := readSourcesList(schemeFile)
+	if err != nil {
+		log.Error(err)
+		return nil, false
+	}
+
+	ok := true
+	schemes := make(map[string]*scheme)
+	for _, item := range schemeItems {
+		schemeName := item.Key.(string)
+		log.Infof("Processing scheme dir %q", schemeName)
+
+		schemeGroupPath := path.Join(schemesDir, schemeName, "*.yaml")
+
+		schemePaths, err := filepath.Glob(schemeGroupPath)
+		if err != nil {
+			log.Error(err)
+			ok = false
+			continue
+		}
+
+		for _, schemePath := range schemePaths {
+			scheme, ok := schemeFromFile(schemePath)
+			if !ok {
+				log.Errorf("Failed to load scheme")
+				ok = false
+				continue
+			}
+
+			if _, ok := schemes[scheme.Slug]; ok {
+				log.WithField("scheme", scheme.Slug).Warnf("Conflicting scheme")
+			}
+
+			log.Debugf("Found scheme %q", scheme.Slug)
+
+			schemes[scheme.Slug] = scheme
+		}
+	}
+
+	ret := []*scheme{}
+	for _, scheme := range schemes {
+		ret = append(ret, scheme)
+	}
+
+	return ret, ok
 }

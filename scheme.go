@@ -94,7 +94,7 @@ func (s *scheme) mustacheContext() map[string]interface{} {
 		baseKey := "base" + base
 		baseVal := s.Colors[baseKey]
 
-		ret[baseKey+"-hex"] = baseVal.Hex()
+		ret[baseKey+"-hex"] = strings.ToLower(strings.TrimLeft(baseVal.Hex(), "#"))
 
 		r, g, b := baseVal.RGB255()
 		ret[baseKey+"-rgb-r"] = r

@@ -15,3 +15,9 @@ they don't exist).
 
 `build` will build all templates following the spec for all templates and
 schemes defined.
+
+## Notes
+
+There are currently discrepencies in output between this and the
+[base16-builder-php](https://bithub.com/chriskempson/base16-builder-php) output.
+I stongly recommend using the refrence implementation until this is fixed.

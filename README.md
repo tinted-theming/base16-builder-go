@@ -3,7 +3,7 @@
 A simple builder for base16 templates and schemes, modeled off of
 [base16-builder-php](https://github.com/chriskempson/base16-builder-php).
 
-This currently implements version 0.7 of the [base16
+This currently implements version 0.8 of the [base16
 spec](https://github.com/chriskempson/base16).
 
 ## Commands
@@ -15,9 +15,3 @@ they don't exist).
 
 `build` will build all templates following the spec for all templates and
 schemes defined.
-
-## Notes
-
-There are currently discrepencies in output between this and the
-[base16-builder-php](https://bithub.com/chriskempson/base16-builder-php) output.
-I stongly recommend using the refrence implementation until this is fixed.

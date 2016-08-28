@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 
+	slugify "github.com/metal3d/go-slugify"
 	yaml "gopkg.in/yaml.v2"
 )
 
@@ -29,17 +30,12 @@ type scheme struct {
 func schemeFromFile(fileName string) (*scheme, bool) {
 	ret := &scheme{}
 
-	ret.Slug = path.Base(fileName)
+	logger := log.WithField("file", fileName)
 
-	if !strings.HasSuffix(ret.Slug, ".yaml") {
-		log.Error("Scheme must end in .yaml")
+	if !strings.HasSuffix(fileName, ".yaml") {
+		logger.Error("Scheme must end in .yaml")
 		return nil, false
 	}
-
-	// Chop off the .yaml so we can have a slugified name.
-	ret.Slug = ret.Slug[:len(ret.Slug)-5]
-
-	logger := log.WithField("scheme", ret.Slug)
 
 	data, err := ioutil.ReadFile(fileName)
 	if err != nil {
@@ -71,6 +67,10 @@ func schemeFromFile(fileName string) (*scheme, bool) {
 		ok = false
 	}
 
+	// Now that we've got all that out of the way, we can start
+	// processing stuff.
+	ret.Slug = strings.ToLower(slugify.Marshal(ret.Scheme))
+
 	for _, base := range bases {
 		baseKey := "base" + base
 		if _, ok := ret.Colors[baseKey]; !ok {
@@ -94,6 +94,8 @@ func (s *scheme) mustacheContext() map[string]interface{} {
 		baseKey := "base" + base
 		baseVal := s.Colors[baseKey]
 
+		// Note that we only lowercase the output of this to match the
+		// reference repo.
 		ret[baseKey+"-hex"] = strings.ToLower(strings.TrimLeft(baseVal.Hex(), "#"))
 
 		r, g, b := baseVal.RGB255()

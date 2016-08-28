@@ -56,7 +56,7 @@ func (t *template) Render(schemes []*scheme) error {
 
 	outputDir := path.Join(t.Dir, t.OutputDir)
 	for _, scheme := range schemes {
-		fileName := path.Join(outputDir, scheme.Name+t.Extension)
+		fileName := path.Join(outputDir, "base16-"+scheme.Slug+t.Extension)
 		rendered := m.Render(scheme.mustacheContext())
 		err = ioutil.WriteFile(fileName, []byte(rendered), 0777)
 		if err != nil {

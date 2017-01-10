@@ -7,7 +7,6 @@ import (
 	"strconv"
 	"strings"
 
-	slugify "github.com/metal3d/go-slugify"
 	yaml "gopkg.in/yaml.v2"
 )
 
@@ -69,7 +68,9 @@ func schemeFromFile(fileName string) (*scheme, bool) {
 
 	// Now that we've got all that out of the way, we can start
 	// processing stuff.
-	ret.Slug = strings.ToLower(slugify.Marshal(ret.Scheme))
+
+	// Take the last path component and chop off .yaml
+	ret.Slug = path.Base(fileName[:len(fileName)-5])
 
 	for _, base := range bases {
 		baseKey := "base" + base

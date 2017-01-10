@@ -1,7 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
+	"os"
 	"path"
 
 	"github.com/hoisie/mustache"
@@ -55,6 +57,18 @@ func (t *template) Render(schemes []*scheme) error {
 	}
 
 	outputDir := path.Join(t.Dir, t.OutputDir)
+
+	stat, err := os.Stat(outputDir)
+	if err != nil {
+		log.Warnf("Directory %q does not exist. Creating.", outputDir)
+		err = os.MkdirAll(outputDir, os.ModePerm)
+		if err != nil {
+			return err
+		}
+	} else if !stat.IsDir() {
+		return fmt.Errorf("Output dir %q is not a dir", outputDir)
+	}
+
 	for _, scheme := range schemes {
 		fileName := path.Join(outputDir, "base16-"+scheme.Slug+t.Extension)
 		rendered := m.Render(scheme.mustacheContext())

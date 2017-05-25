@@ -15,3 +15,14 @@ they don't exist).
 
 `build` will build all templates following the spec for all templates and
 schemes defined.
+
+## Notes
+
+I'm open to making a few template-specific tweaks as long as they'll be useful
+to other templates. Below is a listing of the additions to the base16 spec which
+this builder supports.
+
+### Additional variables
+
+* `scheme-slug-underscored` - A version of the scheme slug where dashes have
+  been replaced with underscores.

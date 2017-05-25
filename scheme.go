@@ -86,10 +86,10 @@ func schemeFromFile(fileName string) (*scheme, bool) {
 
 func (s *scheme) mustacheContext() map[string]interface{} {
 	ret := map[string]interface{}{
-		"scheme-name":           s.Scheme,
-		"scheme-author":         s.Author,
-		"scheme-slug":           s.Slug,
-		"scheme-slug-sanitized": strings.Replace(s.Slug, "-", "_", -1),
+		"scheme-name":             s.Scheme,
+		"scheme-author":           s.Author,
+		"scheme-slug":             s.Slug,
+		"scheme-slug-underscored": strings.Replace(s.Slug, "-", "_", -1),
 	}
 
 	for _, base := range bases {

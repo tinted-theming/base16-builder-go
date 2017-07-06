@@ -3,7 +3,7 @@
 A simple builder for base16 templates and schemes, modeled off of
 [base16-builder-php](https://github.com/chriskempson/base16-builder-php).
 
-This currently implements version 0.8 of the [base16
+This currently implements version 0.9.0 of the [base16
 spec](https://github.com/chriskempson/base16).
 
 ## Commands

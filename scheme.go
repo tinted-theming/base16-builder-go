@@ -1,10 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
 	"path"
 	"path/filepath"
-	"strconv"
 	"strings"
 
 	yaml "gopkg.in/yaml.v2"
@@ -107,9 +107,9 @@ func (s *scheme) mustacheContext() map[string]interface{} {
 		ret[baseKey+"-dec-r"] = float32(r) / 255
 		ret[baseKey+"-dec-g"] = float32(g) / 255
 		ret[baseKey+"-dec-b"] = float32(b) / 255
-		ret[baseKey+"-hex-r"] = strconv.FormatUint(uint64(r), 16)
-		ret[baseKey+"-hex-g"] = strconv.FormatUint(uint64(g), 16)
-		ret[baseKey+"-hex-b"] = strconv.FormatUint(uint64(b), 16)
+		ret[baseKey+"-hex-r"] = fmt.Sprintf("%02x", r)
+		ret[baseKey+"-hex-g"] = fmt.Sprintf("%02x", g)
+		ret[baseKey+"-hex-b"] = fmt.Sprintf("%02x", b)
 	}
 
 	return ret

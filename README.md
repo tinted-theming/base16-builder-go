@@ -26,7 +26,3 @@ this builder supports.
 
 * `scheme-slug-underscored` - A version of the scheme slug where dashes have
   been replaced with underscores.
-* `baseXX-dec-r`, `baseXX-dec-g`, and `baseXX-dec-b` variables have been added
-  for https://github.com/chriskempson/base16/issues/48 so support can be added
-  for iTerm2 and Xcode. Once this is finalized in the spec, these variables may
-  be removed.

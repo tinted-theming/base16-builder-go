@@ -104,6 +104,9 @@ func (s *scheme) mustacheContext() map[string]interface{} {
 		ret[baseKey+"-rgb-r"] = r
 		ret[baseKey+"-rgb-g"] = g
 		ret[baseKey+"-rgb-b"] = b
+		ret[baseKey+"-dec-r"] = float32(r) / 255
+		ret[baseKey+"-dec-g"] = float32(g) / 255
+		ret[baseKey+"-dec-b"] = float32(b) / 255
 		ret[baseKey+"-hex-r"] = strconv.FormatUint(uint64(r), 16)
 		ret[baseKey+"-hex-g"] = strconv.FormatUint(uint64(g), 16)
 		ret[baseKey+"-hex-b"] = strconv.FormatUint(uint64(b), 16)

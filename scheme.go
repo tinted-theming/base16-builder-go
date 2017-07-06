@@ -98,18 +98,17 @@ func (s *scheme) mustacheContext() map[string]interface{} {
 
 		// Note that we only lowercase the output of this to match the
 		// reference repo.
-		ret[baseKey+"-hex"] = strings.ToLower(strings.TrimLeft(baseVal.Hex(), "#"))
+		ret[baseKey+"-hex"] = fmt.Sprintf("%02x%02x%02x", baseVal.R, baseVal.G, baseVal.B)
 
-		r, g, b := baseVal.RGB255()
-		ret[baseKey+"-rgb-r"] = r
-		ret[baseKey+"-rgb-g"] = g
-		ret[baseKey+"-rgb-b"] = b
-		ret[baseKey+"-dec-r"] = float32(r) / 255
-		ret[baseKey+"-dec-g"] = float32(g) / 255
-		ret[baseKey+"-dec-b"] = float32(b) / 255
-		ret[baseKey+"-hex-r"] = fmt.Sprintf("%02x", r)
-		ret[baseKey+"-hex-g"] = fmt.Sprintf("%02x", g)
-		ret[baseKey+"-hex-b"] = fmt.Sprintf("%02x", b)
+		ret[baseKey+"-rgb-r"] = baseVal.R
+		ret[baseKey+"-rgb-g"] = baseVal.G
+		ret[baseKey+"-rgb-b"] = baseVal.B
+		ret[baseKey+"-dec-r"] = float32(baseVal.R) / 255
+		ret[baseKey+"-dec-g"] = float32(baseVal.G) / 255
+		ret[baseKey+"-dec-b"] = float32(baseVal.B) / 255
+		ret[baseKey+"-hex-r"] = fmt.Sprintf("%02x", baseVal.R)
+		ret[baseKey+"-hex-g"] = fmt.Sprintf("%02x", baseVal.G)
+		ret[baseKey+"-hex-b"] = fmt.Sprintf("%02x", baseVal.B)
 	}
 
 	return ret

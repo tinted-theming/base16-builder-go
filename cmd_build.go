@@ -13,7 +13,7 @@ func init() {
 // buildCmd represents the build command
 var buildCmd = &cobra.Command{
 	Use:   "build",
-	Short: "Build all templates",
+	Short: "Build templates",
 	Run: func(cmd *cobra.Command, args []string) {
 		colorSchemes, ok := loadSchemes(path.Join(sourcesDir, "schemes", "list.yaml"))
 		if !ok {

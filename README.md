@@ -14,7 +14,8 @@ There are two main commands: update and build.
 they don't exist).
 
 `build` will build all templates following the spec for all templates and
-schemes defined.
+schemes defined. If additional arguments are passed, only templates matching the
+given names will be built.
 
 ## Notes
 

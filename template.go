@@ -96,6 +96,7 @@ func loadTemplates(templateFile string, targets []string) ([]*template, bool) {
 
 		// We can skip templates if we aren't being asked to build them
 		if len(targets) > 0 && !com.IsSliceContainsStr(targets, templateName) {
+			log.Debugf("Skipping templates dir %q", templateName)
 			continue
 		}
 

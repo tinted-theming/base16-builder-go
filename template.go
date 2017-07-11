@@ -6,6 +6,7 @@ import (
 	"os"
 	"path"
 
+	"github.com/Unknwon/com"
 	"github.com/hoisie/mustache"
 	yaml "gopkg.in/yaml.v2"
 )
@@ -81,7 +82,7 @@ func (t *template) Render(schemes []*scheme) error {
 	return nil
 }
 
-func loadTemplates(templateFile string) ([]*template, bool) {
+func loadTemplates(templateFile string, targets []string) ([]*template, bool) {
 	templateItems, err := readSourcesList(templateFile)
 	if err != nil {
 		log.Error(err)
@@ -92,6 +93,12 @@ func loadTemplates(templateFile string) ([]*template, bool) {
 	ret := []*template{}
 	for _, item := range templateItems {
 		templateName := item.Key.(string)
+
+		// We can skip templates if we aren't being asked to build them
+		if len(targets) > 0 && !com.IsSliceContainsStr(targets, templateName) {
+			continue
+		}
+
 		log.Infof("Processing templates dir %q", templateName)
 
 		templateDir := path.Join(templatesDir, templateName)

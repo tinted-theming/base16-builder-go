@@ -22,7 +22,7 @@ var buildCmd = &cobra.Command{
 
 		log.Infof("Found %d color schemes", len(colorSchemes))
 
-		templates, ok := loadTemplates(path.Join(sourcesDir, "templates", "list.yaml"))
+		templates, ok := loadTemplates(path.Join(sourcesDir, "templates", "list.yaml"), args)
 		if !ok {
 			log.Fatal("Failed to load templates")
 		}

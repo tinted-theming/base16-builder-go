@@ -7,20 +7,22 @@ import (
 
 	"github.com/Masterminds/vcs"
 	"github.com/Sirupsen/logrus"
-	"github.com/Unknwon/com"
 	"github.com/spf13/cobra"
 )
 
 var (
-	sourcesFile  string
-	ignoreErrors bool
+	ignoreErrors    bool
+	templatesSource string
+	schemesSource   string
 )
 
 func init() {
 	RootCmd.AddCommand(updateCmd)
 
-	updateCmd.Flags().StringVar(&sourcesFile, "sources", "sources.yaml", "File with base16 sources")
 	updateCmd.Flags().BoolVar(&ignoreErrors, "ignore-errors", false, "Don't exit on error if possible to continue")
+	updateCmd.Flags().StringVar(&templatesSource, "templates-source", "https://github.com/chriskempson/base16-templates-source.git", "Repo to grab templates from")
+	updateCmd.Flags().StringVar(&schemesSource, "schemes-source", "https://github.com/chriskempson/base16-schemes-source.git", "Repo to grab schemes from")
+
 }
 
 // buildCmd represents the build command
@@ -29,22 +31,17 @@ var updateCmd = &cobra.Command{
 	Short: "Pull in updates from the source repos",
 	Run: func(cmd *cobra.Command, args []string) {
 		log.Info("Updating sources")
-		dirs, ok := downloadSourceList(sourcesFile, sourcesDir)
-		if !ok {
-			log.Fatal("Failed to update sources")
+		if !cloneRepo(templatesSource, path.Join(sourcesDir, "templates"), "templates") {
+			log.Fatal("Failed to update templates sources")
 		}
-
-		for _, dir := range []string{"schemes", "templates"} {
-			if !com.IsSliceContainsStr(dirs, dir) {
-				log.Fatalf("%q location is missing from sources file", dir)
-			}
+		if !cloneRepo(schemesSource, path.Join(sourcesDir, "schemes"), "schemes") {
+			log.Fatal("Failed to update scheme sources")
 		}
 
 		var errored bool
 
 		log.Info("Updating schemes")
-		_, ok = downloadSourceList(path.Join(sourcesDir, "schemes", "list.yaml"), schemesDir)
-		if !ok {
+		if !downloadSourceList(path.Join(sourcesDir, "schemes", "list.yaml"), schemesDir) {
 			if !ignoreErrors {
 				log.Fatal("Failed to update schemes")
 			}
@@ -53,8 +50,7 @@ var updateCmd = &cobra.Command{
 		}
 
 		log.Info("Updating templates")
-		_, ok = downloadSourceList(path.Join(sourcesDir, "templates", "list.yaml"), templatesDir)
-		if !ok {
+		if !downloadSourceList(path.Join(sourcesDir, "templates", "list.yaml"), templatesDir) {
 			if !ignoreErrors {
 				log.Fatal("Failed to update templates")
 			}
@@ -68,58 +64,58 @@ var updateCmd = &cobra.Command{
 	},
 }
 
-func downloadSourceList(sourceFile, targetDir string) ([]string, bool) {
+func downloadSourceList(sourceFile, targetDir string) bool {
 	sources, err := readSourcesList(sourceFile)
 	if err != nil {
 		log.Error(err)
-		return nil, false
+		return false
 	}
 
 	err = os.MkdirAll(targetDir, 0777)
 	if err != nil {
 		log.Error(err)
-		return nil, false
+		return false
 	}
 
 	ok := true
-	var ret []string
 	for _, source := range sources {
-		ret = append(ret, source.Key.(string))
-
 		key := source.Key.(string)
 
 		sourceDir := path.Join(targetDir, key)
 		sourceLocation := source.Value.(string)
 
-		logger := log.WithField("source", key)
+		ok = ok && cloneRepo(sourceLocation, sourceDir, key)
+	}
 
-		repo, err := vcs.NewRepo(sourceLocation, sourceDir)
+	return ok
+}
+
+func cloneRepo(src, dest, key string) bool {
+	logger := log.WithField("source", key)
+
+	repo, err := vcs.NewRepo(src, dest)
+	if err != nil {
+		logger.Error(err)
+		return false
+	}
+
+	if ok := repo.CheckLocal(); !ok {
+		logger.Debugf("Cloning %q to %q", src, dest)
+		err = repo.Get()
 		if err != nil {
-			logger.Error(err)
-			ok = false
-			continue
+			handleVcsError(logger, err)
+			return false
 		}
-
-		if ok := repo.CheckLocal(); !ok {
-			logger.Debugf("Cloning %q to %q", sourceLocation, sourceDir)
-			err = repo.Get()
-			if err != nil {
-				handleVcsError(logger, err)
-				ok = false
-				continue
-			}
-		} else {
-			logger.Debugf("Updating %q", sourceDir)
-			err = repo.Update()
-			if err != nil {
-				handleVcsError(logger, err)
-				ok = false
-				continue
-			}
+	} else {
+		logger.Debugf("Updating %q", dest)
+		err = repo.Update()
+		if err != nil {
+			handleVcsError(logger, err)
+			return false
 		}
 	}
 
-	return ret, ok
+	return true
 }
 
 func handleVcsError(logger *logrus.Entry, err error) {

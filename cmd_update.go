@@ -84,7 +84,7 @@ func downloadSourceList(sourceFile, targetDir string) bool {
 		sourceDir := path.Join(targetDir, key)
 		sourceLocation := source.Value.(string)
 
-		ok = ok && cloneRepo(sourceLocation, sourceDir, key)
+		ok = cloneRepo(sourceLocation, sourceDir, key) && ok
 	}
 
 	return ok

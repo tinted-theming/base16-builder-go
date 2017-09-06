@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"regexp"
@@ -29,7 +28,7 @@ func (c *color) UnmarshalYAML(f func(interface{}) error) error {
 	}
 
 	if !colorRegex.MatchString(in) {
-		return errors.New("Color is not formatted correctly")
+		return fmt.Errorf("Color %q is not formatted correctly", in)
 	}
 
 	tmp, err = strconv.ParseInt(in[0:2], 16, 32)

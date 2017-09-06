@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
-	"path"
 	"path/filepath"
 	"strings"
 
@@ -70,7 +69,7 @@ func schemeFromFile(fileName string) (*scheme, bool) {
 	// processing stuff.
 
 	// Take the last path component and chop off .yaml
-	ret.Slug = path.Base(fileName[:len(fileName)-5])
+	ret.Slug = filepath.Base(fileName[:len(fileName)-5])
 
 	for _, base := range bases {
 		baseKey := "base" + base
@@ -127,7 +126,7 @@ func loadSchemes(schemeFile string) ([]*scheme, bool) {
 		schemeName := item.Key.(string)
 		log.Infof("Processing scheme dir %q", schemeName)
 
-		schemeGroupPath := path.Join(schemesDir, schemeName, "*.yaml")
+		schemeGroupPath := filepath.Join(schemesDir, schemeName, "*.yaml")
 
 		schemePaths, err := filepath.Glob(schemeGroupPath)
 		if err != nil {

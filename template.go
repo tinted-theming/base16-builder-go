@@ -61,13 +61,13 @@ func (t *template) Render(schemes []*scheme) error {
 
 	stat, err := os.Stat(outputDir)
 	if err != nil {
-		log.Warnf("Directory %q does not exist. Creating.", outputDir)
+		log.Warnf("Directory %s does not exist. Creating.", outputDir)
 		err = os.MkdirAll(outputDir, os.ModePerm)
 		if err != nil {
 			return err
 		}
 	} else if !stat.IsDir() {
-		return fmt.Errorf("Output dir %q is not a dir", outputDir)
+		return fmt.Errorf("Output dir %s is not a dir", outputDir)
 	}
 
 	for _, scheme := range schemes {

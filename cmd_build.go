@@ -30,7 +30,7 @@ var buildCmd = &cobra.Command{
 		log.Infof("Found %d templates", len(templates))
 
 		for _, template := range templates {
-			log.Infof("Rendering template %q in %q", template.Name, template.Dir)
+			log.Infof("Rendering template %s in %s", template.Name, template.Dir)
 			err := template.Render(colorSchemes)
 			if err != nil {
 				log.Fatal(err)

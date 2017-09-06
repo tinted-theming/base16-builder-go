@@ -1,7 +1,7 @@
 package main
 
 import (
-	"path"
+	"path/filepath"
 
 	"github.com/spf13/cobra"
 )
@@ -15,14 +15,14 @@ var buildCmd = &cobra.Command{
 	Use:   "build",
 	Short: "Build templates",
 	Run: func(cmd *cobra.Command, args []string) {
-		colorSchemes, ok := loadSchemes(path.Join(sourcesDir, "schemes", "list.yaml"))
+		colorSchemes, ok := loadSchemes(filepath.Join(sourcesDir, "schemes", "list.yaml"))
 		if !ok {
 			log.Fatal("Failed to load color schemes")
 		}
 
 		log.Infof("Found %d color schemes", len(colorSchemes))
 
-		templates, ok := loadTemplates(path.Join(sourcesDir, "templates", "list.yaml"), args)
+		templates, ok := loadTemplates(filepath.Join(sourcesDir, "templates", "list.yaml"), args)
 		if !ok {
 			log.Fatal("Failed to load templates")
 		}

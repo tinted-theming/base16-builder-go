@@ -2,7 +2,7 @@ package main
 
 import (
 	"os"
-	"path"
+	"path/filepath"
 	"strings"
 
 	"github.com/Masterminds/vcs"
@@ -31,17 +31,17 @@ var updateCmd = &cobra.Command{
 	Short: "Pull in updates from the source repos",
 	Run: func(cmd *cobra.Command, args []string) {
 		log.Info("Updating sources")
-		if !cloneRepo(templatesSource, path.Join(sourcesDir, "templates"), "templates") {
+		if !cloneRepo(templatesSource, filepath.Join(sourcesDir, "templates"), "templates") {
 			log.Fatal("Failed to update templates sources")
 		}
-		if !cloneRepo(schemesSource, path.Join(sourcesDir, "schemes"), "schemes") {
+		if !cloneRepo(schemesSource, filepath.Join(sourcesDir, "schemes"), "schemes") {
 			log.Fatal("Failed to update scheme sources")
 		}
 
 		var errored bool
 
 		log.Info("Updating schemes")
-		if !downloadSourceList(path.Join(sourcesDir, "schemes", "list.yaml"), schemesDir) {
+		if !downloadSourceList(filepath.Join(sourcesDir, "schemes", "list.yaml"), schemesDir) {
 			if !ignoreErrors {
 				log.Fatal("Failed to update schemes")
 			}
@@ -50,7 +50,7 @@ var updateCmd = &cobra.Command{
 		}
 
 		log.Info("Updating templates")
-		if !downloadSourceList(path.Join(sourcesDir, "templates", "list.yaml"), templatesDir) {
+		if !downloadSourceList(filepath.Join(sourcesDir, "templates", "list.yaml"), templatesDir) {
 			if !ignoreErrors {
 				log.Fatal("Failed to update templates")
 			}
@@ -81,7 +81,7 @@ func downloadSourceList(sourceFile, targetDir string) bool {
 	for _, source := range sources {
 		key := source.Key.(string)
 
-		sourceDir := path.Join(targetDir, key)
+		sourceDir := filepath.Join(targetDir, key)
 		sourceLocation := source.Value.(string)
 
 		ok = cloneRepo(sourceLocation, sourceDir, key) && ok

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"path"
+	"path/filepath"
 
 	"github.com/Unknwon/com"
 	"github.com/hoisie/mustache"
@@ -19,7 +19,7 @@ type template struct {
 }
 
 func templatesFromFile(templatesDir string) ([]*template, error) {
-	data, err := ioutil.ReadFile(path.Join(templatesDir, "templates", "config.yaml"))
+	data, err := ioutil.ReadFile(filepath.Join(templatesDir, "templates", "config.yaml"))
 	if err != nil {
 		return nil, err
 	}
@@ -52,12 +52,12 @@ func templatesFromFile(templatesDir string) ([]*template, error) {
 }
 
 func (t *template) Render(schemes []*scheme) error {
-	m, err := mustache.ParseFile(path.Join(t.Dir, "templates", t.Name+".mustache"))
+	m, err := mustache.ParseFile(filepath.Join(t.Dir, "templates", t.Name+".mustache"))
 	if err != nil {
 		return err
 	}
 
-	outputDir := path.Join(t.Dir, t.OutputDir)
+	outputDir := filepath.Join(t.Dir, t.OutputDir)
 
 	stat, err := os.Stat(outputDir)
 	if err != nil {
@@ -71,7 +71,7 @@ func (t *template) Render(schemes []*scheme) error {
 	}
 
 	for _, scheme := range schemes {
-		fileName := path.Join(outputDir, "base16-"+scheme.Slug+t.Extension)
+		fileName := filepath.Join(outputDir, "base16-"+scheme.Slug+t.Extension)
 		rendered := m.Render(scheme.mustacheContext())
 		err = ioutil.WriteFile(fileName, []byte(rendered), 0777)
 		if err != nil {
@@ -102,7 +102,7 @@ func loadTemplates(templateFile string, targets []string) ([]*template, bool) {
 
 		log.Infof("Processing templates dir %q", templateName)
 
-		templateDir := path.Join(templatesDir, templateName)
+		templateDir := filepath.Join(templatesDir, templateName)
 		templates, err := templatesFromFile(templateDir)
 		if err != nil {
 			log.Error(err)

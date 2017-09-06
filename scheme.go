@@ -127,7 +127,7 @@ func loadSchemes(schemeFile string) ([]*scheme, bool) {
 		schemeName := item.Key.(string)
 		log.Infof("Processing scheme dir %q", schemeName)
 
-		schemeGroupPath := path.Join(schemesDir, schemeName, "*.yaml")
+		schemeGroupPath := filepath.Join(schemesDir, schemeName, "*.yaml")
 
 		schemePaths, err := filepath.Glob(schemeGroupPath)
 		if err != nil {

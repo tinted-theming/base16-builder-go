@@ -27,3 +27,5 @@ this builder supports.
 
 * `scheme-slug-underscored` - A version of the scheme slug where dashes have
   been replaced with underscores.
+* `baseXX-hex-bgr` - A version of `baseXX-hex` with the values reversed. This
+  was requested [here](https://github.com/chriskempson/base16/issues/116).

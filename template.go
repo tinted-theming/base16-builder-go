@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/Unknwon/com"
-	"github.com/hoisie/mustache"
+	"github.com/cbroglie/mustache"
 	yaml "gopkg.in/yaml.v2"
 )
 
@@ -72,7 +72,11 @@ func (t *template) Render(schemes []*scheme) error {
 
 	for _, scheme := range schemes {
 		fileName := filepath.Join(outputDir, "base16-"+scheme.Slug+t.Extension)
-		rendered := m.Render(scheme.mustacheContext())
+		rendered, err := m.Render(scheme.mustacheContext())
+		if err != nil {
+			return err
+		}
+
 		err = ioutil.WriteFile(fileName, []byte(rendered), 0777)
 		if err != nil {
 			return err

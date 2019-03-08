@@ -6,8 +6,14 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var (
+	buildIgnoreErrors bool
+)
+
 func init() {
 	RootCmd.AddCommand(buildCmd)
+
+	buildCmd.Flags().BoolVar(&buildIgnoreErrors, "ignore-errors", false, "Don't exit on error if possible to continue")
 }
 
 // buildCmd represents the build command
@@ -33,7 +39,7 @@ var buildCmd = &cobra.Command{
 			log.Infof("Rendering template %s in %s", template.Name, template.Dir)
 			err := template.Render(colorSchemes)
 			if err != nil {
-				log.Fatal(err)
+				errorOrFatal(buildIgnoreErrors, "Failed to render template %s in %s: %s", template.Name, template.Dir, err)
 			}
 		}
 	},

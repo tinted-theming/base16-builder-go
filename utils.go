@@ -94,3 +94,11 @@ func validateMapSlice(sources yaml.MapSlice) error {
 
 	return nil
 }
+
+func errorOrFatal(preferError bool, msg string, data ...interface{}) {
+	if preferError {
+		log.Errorf(msg, data...)
+	} else {
+		log.Fatalf(msg, data...)
+	}
+}

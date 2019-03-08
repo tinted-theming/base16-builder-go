@@ -11,15 +11,15 @@ import (
 )
 
 var (
-	ignoreErrors    bool
-	templatesSource string
-	schemesSource   string
+	updateIgnoreErrors bool
+	templatesSource    string
+	schemesSource      string
 )
 
 func init() {
 	RootCmd.AddCommand(updateCmd)
 
-	updateCmd.Flags().BoolVar(&ignoreErrors, "ignore-errors", false, "Don't exit on error if possible to continue")
+	updateCmd.Flags().BoolVar(&updateIgnoreErrors, "ignore-errors", false, "Don't exit on error if possible to continue")
 	updateCmd.Flags().StringVar(&templatesSource, "templates-source", "https://github.com/chriskempson/base16-templates-source.git", "Repo to grab templates from")
 	updateCmd.Flags().StringVar(&schemesSource, "schemes-source", "https://github.com/chriskempson/base16-schemes-source.git", "Repo to grab schemes from")
 
@@ -30,31 +30,27 @@ var updateCmd = &cobra.Command{
 	Use:   "update",
 	Short: "Pull in updates from the source repos",
 	Run: func(cmd *cobra.Command, args []string) {
+		var errored bool
+
 		log.Info("Updating sources")
 		if !cloneRepo(templatesSource, filepath.Join(sourcesDir, "templates"), "templates") {
-			log.Fatal("Failed to update templates sources")
+			errorOrFatal(updateIgnoreErrors, "Failed to update template sources")
+			errored = true
 		}
 		if !cloneRepo(schemesSource, filepath.Join(sourcesDir, "schemes"), "schemes") {
-			log.Fatal("Failed to update scheme sources")
+			errorOrFatal(updateIgnoreErrors, "Failed to update scheme sources")
+			errored = true
 		}
-
-		var errored bool
 
 		log.Info("Updating schemes")
 		if !downloadSourceList(filepath.Join(sourcesDir, "schemes", "list.yaml"), schemesDir) {
-			if !ignoreErrors {
-				log.Fatal("Failed to update schemes")
-			}
-
+			errorOrFatal(updateIgnoreErrors, "Failed to update schemes")
 			errored = true
 		}
 
 		log.Info("Updating templates")
 		if !downloadSourceList(filepath.Join(sourcesDir, "templates", "list.yaml"), templatesDir) {
-			if !ignoreErrors {
-				log.Fatal("Failed to update templates")
-			}
-
+			errorOrFatal(updateIgnoreErrors, "Failed to update templates")
 			errored = true
 		}
 

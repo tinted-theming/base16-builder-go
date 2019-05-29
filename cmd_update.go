@@ -20,8 +20,8 @@ func init() {
 	RootCmd.AddCommand(updateCmd)
 
 	updateCmd.Flags().BoolVar(&updateIgnoreErrors, "ignore-errors", false, "Don't exit on error if possible to continue")
-	updateCmd.Flags().StringVar(&templatesSource, "templates-source", "https://github.com/chriskempson/base16-templates-source.git", "Repo to grab templates from")
-	updateCmd.Flags().StringVar(&schemesSource, "schemes-source", "https://github.com/chriskempson/base16-schemes-source.git", "Repo to grab schemes from")
+	updateCmd.Flags().StringVar(&templatesSource, "templates-source", "https://github.com/base16-project/base16-templates-source.git", "Repo to grab templates from")
+	updateCmd.Flags().StringVar(&schemesSource, "schemes-source", "https://github.com/base16-project/base16-schemes-source.git", "Repo to grab schemes from")
 
 }
 

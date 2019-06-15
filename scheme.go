@@ -97,9 +97,10 @@ func (s *scheme) mustacheContext() map[string]interface{} {
 		baseKey := "base" + base
 		baseVal := s.Colors[baseKey]
 
-		// Note that we only lowercase the output of this to match the
-		// reference repo.
+		// Note that we only lowercase the output of this to match the reference
+		// repo.
 		ret[baseKey+"-hex"] = fmt.Sprintf("%02x%02x%02x", baseVal.R, baseVal.G, baseVal.B)
+		ret[baseKey+"-hex-bgr"] = fmt.Sprintf("%02x%02x%02x", baseVal.B, baseVal.G, baseVal.R)
 
 		ret[baseKey+"-rgb-r"] = baseVal.R
 		ret[baseKey+"-rgb-g"] = baseVal.G
@@ -110,9 +111,6 @@ func (s *scheme) mustacheContext() map[string]interface{} {
 		ret[baseKey+"-hex-r"] = fmt.Sprintf("%02x", baseVal.R)
 		ret[baseKey+"-hex-g"] = fmt.Sprintf("%02x", baseVal.G)
 		ret[baseKey+"-hex-b"] = fmt.Sprintf("%02x", baseVal.B)
-
-		// Any extensions on the spec should go here
-		ret[baseKey+"-hex-bgr"] = fmt.Sprintf("%02x%02x%02x", baseVal.B, baseVal.G, baseVal.R)
 	}
 
 	return ret

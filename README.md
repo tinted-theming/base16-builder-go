@@ -3,7 +3,7 @@
 A simple builder for base16 templates and schemes, modeled off of
 [base16-builder-php](https://github.com/chriskempson/base16-builder-php).
 
-This currently implements version 0.9.0 of the [base16
+This currently implements version 0.9.1 of the [base16
 spec](https://github.com/chriskempson/base16).
 
 ## Commands
@@ -27,5 +27,3 @@ this builder supports.
 
 * `scheme-slug-underscored` - A version of the scheme slug where dashes have
   been replaced with underscores.
-* `baseXX-hex-bgr` - A version of `baseXX-hex` with the values reversed. This
-  was requested [here](https://github.com/chriskempson/base16/issues/116).

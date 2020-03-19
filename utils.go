@@ -5,11 +5,12 @@ import (
 	"io/ioutil"
 	"regexp"
 	"strconv"
+	"strings"
 
 	yaml "gopkg.in/yaml.v2"
 )
 
-var colorRegex = regexp.MustCompile(`^[0-9a-fA-F]{6}$`)
+var colorRegex = regexp.MustCompile(`^#?[0-9a-fA-F]{6}$`)
 
 // color is a small utility type which parses colors in html format and drops
 // them into a type which we can use for some basic conversions. It also adds
@@ -30,6 +31,8 @@ func (c *color) UnmarshalYAML(f func(interface{}) error) error {
 	if !colorRegex.MatchString(in) {
 		return fmt.Errorf("Color %q is not formatted correctly", in)
 	}
+
+	in = strings.TrimPrefix(in, "#")
 
 	tmp, err = strconv.ParseInt(in[0:2], 16, 32)
 	if err != nil {

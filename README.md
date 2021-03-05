@@ -6,6 +6,16 @@ A simple builder for base16 templates and schemes, modeled off of
 This currently implements version 0.9.1 of the [base16
 spec](https://github.com/chriskempson/base16).
 
+## Install
+
+### Arch Linux
+
+```
+yay base16-builder-go
+```
+
+Available as command after installation: `base16-builder`
+
 ## Commands
 
 There are two main commands: update and build.

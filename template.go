@@ -7,8 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/cbroglie/mustache"
-	"github.com/unknwon/com"
-	yaml "gopkg.in/yaml.v2"
+	yaml "gopkg.in/yaml.v3"
 )
 
 type template struct {
@@ -19,7 +18,7 @@ type template struct {
 }
 
 func templatesFromFile(templatesDir string) ([]*template, error) {
-	data, err := ioutil.ReadFile(filepath.Join(templatesDir, "templates", "config.yaml"))
+	data, err := ioutil.ReadFile(filepath.Join(templateDir, "templates", "config.yaml"))
 	if err != nil {
 		return nil, err
 	}
@@ -84,38 +83,4 @@ func (t *template) Render(schemes []*scheme) error {
 	}
 
 	return nil
-}
-
-func loadTemplates(templateFile string, targets []string) ([]*template, bool) {
-	templateItems, err := readSourcesList(templateFile)
-	if err != nil {
-		log.Error(err)
-		return nil, false
-	}
-
-	ok := true
-	ret := []*template{}
-	for _, item := range templateItems {
-		templateName := item.Key.(string)
-
-		// We can skip templates if we aren't being asked to build them
-		if len(targets) > 0 && !com.IsSliceContainsStr(targets, templateName) {
-			log.Debugf("Skipping templates dir %q", templateName)
-			continue
-		}
-
-		log.Infof("Processing templates dir %q", templateName)
-
-		templateDir := filepath.Join(templatesDir, templateName)
-		templates, err := templatesFromFile(templateDir)
-		if err != nil {
-			log.Error(err)
-			ok = false
-			continue
-		}
-
-		ret = append(ret, templates...)
-	}
-
-	return ret, ok
 }

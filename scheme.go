@@ -2,11 +2,11 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io/fs"
 	"path/filepath"
 	"strings"
 
-	yaml "gopkg.in/yaml.v2"
+	yaml "gopkg.in/yaml.v3"
 )
 
 var bases = []string{
@@ -25,7 +25,7 @@ type scheme struct {
 	Colors map[string]color `yaml:",inline"`
 }
 
-func schemeFromFile(fileName string) (*scheme, bool) {
+func schemeFromFile(schemesFS fs.FS, fileName string) (*scheme, bool) {
 	ret := &scheme{}
 
 	logger := log.WithField("file", fileName)
@@ -35,7 +35,7 @@ func schemeFromFile(fileName string) (*scheme, bool) {
 		return nil, false
 	}
 
-	data, err := ioutil.ReadFile(fileName)
+	data, err := fs.ReadFile(schemesFS, fileName)
 	if err != nil {
 		logger.Error(err)
 		return nil, false
@@ -69,11 +69,11 @@ func schemeFromFile(fileName string) (*scheme, bool) {
 	// processing stuff.
 
 	// Take the last path component and chop off .yaml
-	ret.Slug = filepath.Base(fileName[:len(fileName)-5])
+	ret.Slug = filepath.Base(strings.TrimSuffix(fileName, ".yaml"))
 
 	for _, base := range bases {
 		baseKey := "base" + base
-		if _, ok := ret.Colors[baseKey]; !ok {
+		if _, innerOk := ret.Colors[baseKey]; !innerOk {
 			logger.Errorf("Scheme missing %q", baseKey)
 			ok = false
 			continue
@@ -116,44 +116,31 @@ func (s *scheme) mustacheContext() map[string]interface{} {
 	return ret
 }
 
-func loadSchemes(schemeFile string) ([]*scheme, bool) {
-	schemeItems, err := readSourcesList(schemeFile)
+func loadSchemes(schemesFS fs.FS) ([]*scheme, bool) {
+	schemes := make(map[string]*scheme)
+
+	schemePaths, err := fs.Glob(schemesFS, "*.yaml")
 	if err != nil {
 		log.Error(err)
 		return nil, false
 	}
 
-	ok := true
-	schemes := make(map[string]*scheme)
-	for _, item := range schemeItems {
-		schemeName := item.Key.(string)
-		log.Infof("Processing scheme dir %q", schemeName)
-
-		schemeGroupPath := filepath.Join(schemesDir, schemeName, "*.yaml")
-
-		schemePaths, err := filepath.Glob(schemeGroupPath)
-		if err != nil {
-			log.Error(err)
-			ok = false
-			continue
+	for _, schemePath := range schemePaths {
+		scheme, ok := schemeFromFile(schemesFS, schemePath)
+		if !ok {
+			log.Errorf("Failed to load scheme")
+			return nil, false
 		}
 
-		for _, schemePath := range schemePaths {
-			scheme, ok := schemeFromFile(schemePath)
-			if !ok {
-				log.Errorf("Failed to load scheme")
-				ok = false
-				continue
-			}
-
-			if _, ok := schemes[scheme.Slug]; ok {
-				log.WithField("scheme", scheme.Slug).Warnf("Conflicting scheme")
-			}
-
-			log.Debugf("Found scheme %q", scheme.Slug)
-
-			schemes[scheme.Slug] = scheme
+		// XXX: this should never happen because it's now a single schemes dir,
+		// but we include this check just in case someone messed something up.
+		if _, ok := schemes[scheme.Slug]; ok {
+			log.WithField("scheme", scheme.Slug).Warnf("Conflicting scheme")
 		}
+
+		log.Debugf("Found scheme %q", scheme.Slug)
+
+		schemes[scheme.Slug] = scheme
 	}
 
 	ret := []*scheme{}
@@ -161,5 +148,5 @@ func loadSchemes(schemeFile string) ([]*scheme, bool) {
 		ret = append(ret, scheme)
 	}
 
-	return ret, ok
+	return ret, true
 }

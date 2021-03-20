@@ -1,14 +1,20 @@
 package main
 
 import (
+	"embed"
+	"flag"
+	"io/fs"
+	"os"
+
 	"github.com/sirupsen/logrus"
-	"github.com/spf13/cobra"
 )
 
+//go:embed schemes/*.yaml
+var schemesFS embed.FS
+
 var (
-	sourcesDir   string
-	schemesDir   string
-	templatesDir string
+	schemesDir  string
+	templateDir string
 
 	// Define the logger we'll be using
 	logVerbose bool
@@ -17,30 +23,44 @@ var (
 )
 
 func init() {
-	RootCmd.PersistentFlags().StringVar(&sourcesDir, "sources-dir", "./sources/", "Target directory for source repos")
-	RootCmd.PersistentFlags().StringVar(&schemesDir, "schemes-dir", "./schemes/", "Target directory for scheme data")
-	RootCmd.PersistentFlags().StringVar(&templatesDir, "templates-dir", "./templates/", "Target directory for template data")
+	flag.StringVar(&schemesDir, "schemes-dir", "-", "Target directory for scheme data. The default value uses internal schemes.")
+	flag.StringVar(&templateDir, "template-dir", ".", "Target template directory to build.")
+	flag.BoolVar(&logVerbose, "verbose", false, "Log all debug messages")
 
-	RootCmd.PersistentFlags().BoolVar(&logVerbose, "verbose", false, "Log all debug messages")
-
-	cobra.OnInitialize(initLogger)
-}
-
-func initLogger() {
 	rawLog.Level = logrus.InfoLevel
 	if logVerbose {
 		rawLog.Level = logrus.DebugLevel
 	}
 }
 
-// RootCmd represents the base command when called without any subcommands
-var RootCmd = &cobra.Command{
-	Use:   "base16-builder-go",
-	Short: "A simple builder for base16 templates and schemes",
-}
-
 func main() {
-	if err := RootCmd.Execute(); err != nil {
-		log.Fatal(err)
+	flag.Parse()
+
+	var targetFS fs.FS
+	if schemesDir == "-" {
+		log.Info("Using internal schemes")
+		targetFS, _ = fs.Sub(schemesFS, "schemes")
+	} else {
+		log.Infof("Processing scheme dir %q", schemesDir)
+		targetFS = os.DirFS(schemesDir)
+	}
+
+	colorSchemes, ok := loadSchemes(targetFS)
+	if !ok {
+		log.Fatal("Failed to load color schemes")
+	}
+
+	log.Infof("Found %d color schemes", len(colorSchemes))
+
+	templates, err := templatesFromFile(templateDir)
+	if err != nil {
+		log.Panic(err)
+	}
+
+	for _, template := range templates {
+		err = template.Render(colorSchemes)
+		if err != nil {
+			log.Panic(err)
+		}
 	}
 }

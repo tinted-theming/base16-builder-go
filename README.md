@@ -3,19 +3,19 @@
 A simple builder for base16 templates and schemes.
 
 This currently implements version 0.10.0 of the
-[base16 spec](https://github.com/chriskempson/base16).
+[base16 spec](https://github.com/base16-project/base16).
 
 ## Building
 
 Currently version 1.16 or higher of the Go compiler is needed.
 
-Currently 0.10.0 is not an official release of the base16 spec and some things
-are still being ironed out, so an additional step is needed.
+Unfortunately, because the schemes are stored in a separate repo, the schemes
+repo needs to be cloned before building.
 
 The following command will clone the schemes directory
 
 ```
-$ git clone https://github.com/belak/base16-schemes.git schemes
+$ git clone https://github.com/base16-project/base16-schemes.git schemes
 ```
 
 Now that the repo is cloned, you can use `go build` to create a binary. You may

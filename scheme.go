@@ -14,6 +14,10 @@ var bases = []string{
 	"08", "09", "0A", "0B", "0C", "0D", "0E", "0F",
 }
 
+var optionalBases = []string{
+	"10", "11", "12", "13", "14", "15", "16", "17",
+}
+
 type scheme struct {
 	Name string `yaml:"-"`
 	Slug string `yaml:"-"`
@@ -60,7 +64,7 @@ func schemeFromFile(schemesFS fs.FS, fileName string) (*scheme, bool) {
 		logger.Warn("Scheme author should not be empty")
 	}
 
-	if len(bases) != len(ret.Colors) {
+	if len(ret.Colors) < len(bases) {
 		logger.Error("Wrong number of colors in scheme")
 		ok = false
 	}
@@ -71,12 +75,25 @@ func schemeFromFile(schemesFS fs.FS, fileName string) (*scheme, bool) {
 	// Take the last path component and chop off .yaml
 	ret.Slug = filepath.Base(strings.TrimSuffix(fileName, ".yaml"))
 
+	// All schemes must include the original 16 bases.
 	for _, base := range bases {
 		baseKey := "base" + base
 		if _, innerOk := ret.Colors[baseKey]; !innerOk {
 			logger.Errorf("Scheme missing %q", baseKey)
 			ok = false
 			continue
+		}
+	}
+
+	// Check the extra bases from base24.
+	if len(ret.Colors) > len(bases) {
+		for _, base := range optionalBases {
+			baseKey := "base" + base
+			if _, innerOk := ret.Colors[baseKey]; !innerOk {
+				logger.Errorf("Scheme missing %q", baseKey)
+				ok = false
+				continue
+			}
 		}
 	}
 
@@ -93,9 +110,15 @@ func (s *scheme) mustacheContext() map[string]interface{} {
 		"scheme-slug-underscored": strings.Replace(s.Slug, "-", "_", -1),
 	}
 
-	for _, base := range bases {
+	allBases := append([]string{}, bases...)
+	allBases = append(allBases, optionalBases...)
+
+	for _, base := range append(allBases) {
 		baseKey := "base" + base
-		baseVal := s.Colors[baseKey]
+		baseVal, ok := s.Colors[baseKey]
+		if !ok {
+			continue
+		}
 
 		// Note that we only lowercase the output of this to match the reference
 		// repo.

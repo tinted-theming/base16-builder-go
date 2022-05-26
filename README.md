@@ -48,3 +48,8 @@ this builder supports.
 
 * `scheme-slug-underscored` - A version of the scheme slug where dashes have
   been replaced with underscores.
+
+### Base24 Support
+
+This builder has experimental support for [base24](https://github.com/Base24)
+schemes and templates.

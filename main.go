@@ -20,6 +20,11 @@ var (
 	logVerbose bool
 	rawLog     = logrus.New()
 	log        = logrus.NewEntry(rawLog)
+
+	// Variables set by goreleaser
+	version = "dev"
+	commit  = "unknown"
+	date    = "unknown"
 )
 
 func init() {
@@ -35,6 +40,12 @@ func init() {
 
 func main() {
 	flag.Parse()
+
+	log.WithFields(logrus.Fields{
+		"version": version,
+		"commit":  commit,
+		"date":    date,
+	}).Info("base16-builder-go")
 
 	var targetFS fs.FS
 	if schemesDir == "-" {

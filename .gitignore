@@ -28,3 +28,5 @@ sources
 schemes
 templates
 base16-builder-go
+
+dist/

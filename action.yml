@@ -1,0 +1,10 @@
+name: 'Base16 Builder Go'
+description: 'Build all the schemes for a template repo'
+inputs:
+  path:
+    description: 'path to the schemes to use to build'
+    required: true
+    default: schemes
+runs:
+  using: 'docker'
+  image: 'Dockerfile'

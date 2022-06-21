@@ -24,9 +24,6 @@ _testmain.go
 *.prof
 
 # Builder related things
-sources
-schemes
-templates
 base16-builder-go
 
 dist/

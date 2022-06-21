@@ -10,7 +10,7 @@ builds:
   - amd64
   - arm64
 dockers:
-- dockerfile: Dockerfile-release
+-
   image_templates:
   - "ghcr.io/base16-project/base16-builder-go:{{ .Tag }}"
   - "ghcr.io/base16-project/base16-builder-go:v{{ .Major }}.{{ .Minor }}"

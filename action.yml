@@ -7,4 +7,4 @@ inputs:
     default: schemes
 runs:
   using: 'docker'
-  image: 'Dockerfile-actions'
+  image: 'docker://ghcr.io/base16-project/base16-builder-go:v0.2.3'

@@ -1,14 +1,22 @@
 project_name: base16-builder-go
 builds:
-  - env:
-      - CGO_ENABLED=0
-    goos:
-      - linux
-      - windows
-      - darwin
-    goarch:
-      - amd64
-      - arm64
+- env:
+  - CGO_ENABLED=0
+  goos:
+  - linux
+  - windows
+  - darwin
+  goarch:
+  - amd64
+  - arm64
+dockers:
+- dockerfile: Dockerfile-release
+  image_templates:
+  - "ghcr.io/base16-project/base16-builder-go:{{ .Tag }}"
+  - "ghcr.io/base16-project/base16-builder-go:v{{ .Major }}.{{ .Minor }}"
+  - "ghcr.io/base16-project/base16-builder-go:latest"
+  extra_files:
+  - entrypoint.sh
 archives:
 - format: binary
   replacements:

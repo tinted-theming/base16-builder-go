@@ -7,4 +7,4 @@ inputs:
     default: schemes
 runs:
   using: 'docker'
-  image: 'Dockerfile'
+  image: 'Dockerfile-actions'

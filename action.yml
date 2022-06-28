@@ -3,8 +3,7 @@ description: 'Build all the schemes for a template repo'
 inputs:
   path:
     description: 'path to the schemes to use to build'
-    required: true
-    default: schemes
+    required: false
 runs:
   using: 'docker'
-  image: 'docker://ghcr.io/base16-project/base16-builder-go:v0.2.3'
+  image: 'docker://ghcr.io/base16-project/base16-builder-go:v0.2.5'

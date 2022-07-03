@@ -26,9 +26,10 @@ var (
 	log        = logrus.NewEntry(rawLog)
 
 	// Variables set by goreleaser
-	version = "dev"
-	commit  = "unknown"
-	date    = "unknown"
+	version     = "dev"
+	commit      = "unknown"
+	date        = "unknown"
+	specVersion = "0.10.1"
 )
 
 func init() {
@@ -72,9 +73,10 @@ func main() {
 	flag.Parse()
 
 	log.WithFields(logrus.Fields{
-		"version": version,
-		"commit":  commit,
-		"date":    date,
+		"version":      version,
+		"commit":       commit,
+		"date":         date,
+		"spec-version": specVersion,
 	}).Info("base16-builder-go")
 
 	var targetFS fs.FS

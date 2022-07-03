@@ -15,11 +15,11 @@ var bases = []string{
 }
 
 type scheme struct {
-	Name string `yaml:"-"`
 	Slug string `yaml:"-"`
 
-	Scheme string `yaml:"scheme"`
-	Author string `yaml:"author"`
+	Scheme      string `yaml:"scheme"`
+	Author      string `yaml:"author"`
+	Description string `yaml:"description"`
 
 	// Colors will hold all the "base*" variables.
 	Colors map[string]color `yaml:",inline"`
@@ -65,6 +65,11 @@ func schemeFromFile(schemesFS fs.FS, fileName string) (*scheme, bool) {
 		ok = false
 	}
 
+	// Sanitize any fields which were added later
+	if ret.Description == "" {
+		ret.Description = ret.Scheme
+	}
+
 	// Now that we've got all that out of the way, we can start
 	// processing stuff.
 
@@ -85,9 +90,10 @@ func schemeFromFile(schemesFS fs.FS, fileName string) (*scheme, bool) {
 
 func (s *scheme) mustacheContext() map[string]interface{} {
 	ret := map[string]interface{}{
-		"scheme-name":   s.Scheme,
-		"scheme-author": s.Author,
-		"scheme-slug":   s.Slug,
+		"scheme-name":        s.Scheme,
+		"scheme-author":      s.Author,
+		"scheme-slug":        s.Slug,
+		"scheme-description": s.Description,
 
 		// Any extensions on the spec should go here
 		"scheme-slug-underscored": strings.Replace(s.Slug, "-", "_", -1),

@@ -66,7 +66,7 @@ func templatesFromFile(templatesDir string) ([]*template, error) {
 	return ret, nil
 }
 
-func (t *template) Render(schemes []*universalScheme) error {
+func (t *template) Render(schemes []*ColorScheme) error {
 	m, err := mustache.ParseFile(filepath.Join(t.Dir, "templates", t.Name+".mustache"))
 	if err != nil {
 		return err
@@ -88,7 +88,7 @@ func (t *template) Render(schemes []*universalScheme) error {
 	var templateRendered bool
 
 	for _, scheme := range schemes {
-		templateVariables := scheme.mustacheContext()
+		templateVariables := scheme.TemplateVariables()
 
 		// If the scheme's system wasn't in this template's supported systems
 		// list, we skip it.

@@ -6,7 +6,6 @@ import (
 	"io/fs"
 	"path/filepath"
 	"strings"
-	"unicode"
 
 	"gopkg.in/yaml.v3"
 )
@@ -148,24 +147,10 @@ func LoadUniversalScheme(filename string, data []byte) (*ColorScheme, error) {
 	// involves normalizing any unicode, lower-casing it, replacing spaces with
 	// dashes.
 	if ret.Slug == "" {
-		slug, err := ToAscii(ret.Name)
+		ret.Slug, err = Slugify(ret.Name)
 		if err != nil {
 			return nil, err
 		}
-
-		// Replace spaces with dashes and drop everything else that isn't
-		// alphanumeric.
-		ret.Slug = strings.Map(func(c rune) rune {
-			if c == ' ' || c == '-' {
-				return '-'
-			}
-
-			if unicode.IsLetter(c) || unicode.IsNumber(c) {
-				return c
-			}
-
-			return -1
-		}, strings.ToLower(slug))
 	}
 
 	if ret.Description == "" {

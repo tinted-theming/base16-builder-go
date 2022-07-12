@@ -76,7 +76,9 @@ func (t *template) Render(schemes []*scheme) error {
 			return err
 		}
 
-		err = ioutil.WriteFile(fileName, []byte(rendered), 0777)
+		// We use 666 as the filemode here rather than 777 because we don't want
+		// it executable by default.
+		err = os.WriteFile(fileName, []byte(rendered), 0666)
 		if err != nil {
 			return err
 		}

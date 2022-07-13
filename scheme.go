@@ -48,10 +48,6 @@ func (s *ColorScheme) TemplateVariables() map[string]interface{} {
 func loadSchemes(schemesFS fs.FS) ([]*ColorScheme, bool) {
 	schemes := make(map[string]map[string]*ColorScheme)
 
-	// Pre-create some of our special cases to make it easier later
-	schemes["base16"] = make(map[string]*ColorScheme)
-	schemes["base17"] = make(map[string]*ColorScheme)
-
 	// Walk the fs.FS we have and load all yaml files as scheme files.
 	err := fs.WalkDir(schemesFS, ".", func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
@@ -91,30 +87,7 @@ func loadSchemes(schemesFS fs.FS) ([]*ColorScheme, bool) {
 		return nil, false
 	}
 
-	// Copy all base17 schemes to base16 which are missing
-	for _, scheme := range schemes["base17"] {
-		if _, ok := schemes["base16"][scheme.Slug]; ok {
-			continue
-		}
-
-		// Copy the scheme and update the "system"
-		var newScheme ColorScheme = *scheme
-		newScheme.System = "base16"
-		schemes["base16"][scheme.Slug] = &newScheme
-	}
-
-	// Copy all base16 schemes to base17 which are missing
-	for _, scheme := range schemes["base16"] {
-		if _, ok := schemes["base17"][scheme.Slug]; ok {
-			continue
-		}
-
-		// Copy the scheme and update the "system"
-		var newScheme ColorScheme = *scheme
-		newScheme.System = "base17"
-		schemes["base17"][scheme.Slug] = &newScheme
-	}
-
+	// Flatten all the schemes into a list.
 	var ret []*ColorScheme
 	for _, system := range schemes {
 		for _, scheme := range system {

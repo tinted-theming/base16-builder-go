@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/hashicorp/go-multierror"
 	"gopkg.in/yaml.v3"
 )
 
@@ -110,12 +111,13 @@ func LoadLegacyScheme(filename string, data []byte) (*ColorScheme, error) {
 }
 
 type universalScheme struct {
-	Slug        string           `yaml:"slug"`
-	Name        string           `yaml:"name"`
-	Author      string           `yaml:"author"`
-	System      string           `yaml:"system"`
-	Description string           `yaml:"description"`
-	Palette     map[string]color `yaml:"palette"`
+	Slug        string            `yaml:"slug"`
+	Name        string            `yaml:"name"`
+	Author      string            `yaml:"author"`
+	System      string            `yaml:"system"`
+	Description string            `yaml:"description"`
+	Palette     map[string]color  `yaml:"palette"`
+	Mappings    map[string]string `yaml:"mappings"`
 }
 
 func LoadUniversalScheme(filename string, data []byte) (*ColorScheme, error) {
@@ -137,8 +139,8 @@ func LoadUniversalScheme(filename string, data []byte) (*ColorScheme, error) {
 		Palette:     scheme.Palette,
 	}
 
-	// Author is a warning because there appear to be some themes
-	// without them.
+	// Missing the author field is a warning because there appear to be some
+	// themes without them.
 	if ret.Author == "" {
 		logger.Warn("Scheme author should not be empty")
 	}
@@ -158,8 +160,25 @@ func LoadUniversalScheme(filename string, data []byte) (*ColorScheme, error) {
 	}
 
 	if ret.Name == "" {
-		return nil, errors.New("Scheme name cannot be empty")
+		return nil, errors.New("scheme name cannot be empty")
 	}
 
-	return ret, nil
+	merr := &multierror.Error{}
+
+	// Copy any mappings into the palette
+	for key, alias := range scheme.Mappings {
+		if _, ok := ret.Palette[key]; ok {
+			merr = AppendErrorf(merr, "duplicate key in palette and mappings: %s", key)
+			continue
+		}
+
+		if _, ok := ret.Palette[alias]; !ok {
+			merr = AppendErrorf(merr, "missing referenced alias: %s", alias)
+			continue
+		}
+
+		ret.Palette[key] = ret.Palette[alias]
+	}
+
+	return ret, merr.ErrorOrNil()
 }

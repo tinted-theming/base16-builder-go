@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"io/fs"
 	"strings"
+
+	"github.com/hashicorp/go-multierror"
 )
 
 type ColorScheme struct {
@@ -48,6 +50,8 @@ func (s *ColorScheme) TemplateVariables() map[string]interface{} {
 func loadSchemes(schemesFS fs.FS) ([]*ColorScheme, bool) {
 	schemes := make(map[string]map[string]*ColorScheme)
 
+	merr := &multierror.Error{}
+
 	// Walk the fs.FS we have and load all yaml files as scheme files.
 	err := fs.WalkDir(schemesFS, ".", func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
@@ -65,7 +69,8 @@ func loadSchemes(schemesFS fs.FS) ([]*ColorScheme, bool) {
 
 		scheme, err := LoadScheme(schemesFS, path)
 		if err != nil {
-			return err
+			merr = AppendError(merr, multierror.Prefix(err, fmt.Sprintf("failed to load scheme %s:", path)))
+			return nil
 		}
 
 		if _, ok := schemes[scheme.System]; !ok {
@@ -73,7 +78,8 @@ func loadSchemes(schemesFS fs.FS) ([]*ColorScheme, bool) {
 		}
 
 		if _, ok := schemes[scheme.System][scheme.Slug]; ok {
-			log.WithField("scheme", scheme.Slug).Warnf("Conflicting scheme")
+			merr = AppendErrorf(merr, "conflicting scheme %s-%s", scheme.System, scheme.Slug)
+			return nil
 		}
 
 		log.Debugf("Found scheme %q", scheme.Slug)
@@ -83,6 +89,11 @@ func loadSchemes(schemesFS fs.FS) ([]*ColorScheme, bool) {
 		return nil
 	})
 	if err != nil {
+		log.Error(err)
+		return nil, false
+	}
+
+	if err := merr.ErrorOrNil(); err != nil {
 		log.Error(err)
 		return nil, false
 	}

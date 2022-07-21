@@ -29,7 +29,7 @@ var (
 	version     = "dev"
 	commit      = "unknown"
 	date        = "unknown"
-	specVersion = "0.10.1"
+	specVersion = "0.11.0-dev"
 )
 
 func init() {

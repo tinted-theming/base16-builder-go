@@ -1,6 +1,7 @@
 project_name: base16-builder-go
 builds:
-- env:
+- main: ./cmd/base16-builder-go
+  env:
   - CGO_ENABLED=0
   goos:
   - linux
@@ -9,14 +10,6 @@ builds:
   goarch:
   - amd64
   - arm64
-dockers:
--
-  image_templates:
-  - "ghcr.io/base16-project/base16-builder-go:{{ .Tag }}"
-  - "ghcr.io/base16-project/base16-builder-go:v{{ .Major }}.{{ .Minor }}"
-  - "ghcr.io/base16-project/base16-builder-go:latest"
-  extra_files:
-  - entrypoint.sh
 archives:
 - format: binary
   replacements:
@@ -29,3 +22,37 @@ changelog:
     exclude:
       - '^docs:'
       - '^test:'
+
+# Docker is split into 2 sections - the images we're building and the manifests
+# we're linking them into. We start off by specifying an image for each platform
+# we're building for.
+dockers:
+- image_templates: ["ghcr.io/base16-project/base16-builder-go:{{ .Version }}-amd64"]
+  use: buildx
+  build_flag_templates:
+  - --platform=linux/amd64
+  extra_files:
+  - entrypoint.sh
+- image_templates: ["ghcr.io/base16-project/base16-builder-go:{{ .Version }}-arm64"]
+  goarch: arm64
+  use: buildx
+  build_flag_templates:
+  - --platform=linux/arm64/v8
+  extra_files:
+  - entrypoint.sh
+
+# The manifests link together multiple built images as a single tag. This lets
+# us bundle both an amd64 and arm64 version of the same image as the same tag.
+docker_manifests:
+- name_template: "ghcr.io/base16-project/base16-builder-go:{{ .Tag }}"
+  image_templates:
+  - "ghcr.io/base16-project/base16-builder-go:{{ .Version }}-amd64"
+  - "ghcr.io/base16-project/base16-builder-go:{{ .Version }}-arm64"
+- name_template: "ghcr.io/base16-project/base16-builder-go:v{{ .Major }}.{{ .Minor }}"
+  image_templates:
+  - "ghcr.io/base16-project/base16-builder-go:{{ .Version }}-amd64"
+  - "ghcr.io/base16-project/base16-builder-go:{{ .Version }}-arm64"
+- name_template: "ghcr.io/base16-project/base16-builder-go:latest"
+  image_templates:
+  - "ghcr.io/base16-project/base16-builder-go:{{ .Version }}-amd64"
+  - "ghcr.io/base16-project/base16-builder-go:{{ .Version }}-arm64"

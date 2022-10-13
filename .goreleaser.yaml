@@ -11,6 +11,17 @@ builds:
   - arm64
 dockers:
 -
+  goos: linux
+  goarch: amd64
+  image_templates:
+  - "ghcr.io/tinted-theming/base16-builder-go:{{ .Tag }}"
+  - "ghcr.io/tinted-theming/base16-builder-go:v{{ .Major }}.{{ .Minor }}"
+  - "ghcr.io/tinted-theming/base16-builder-go:latest"
+  extra_files:
+  - entrypoint.sh
+-
+  goos: linux
+  goarch: arm64
   image_templates:
   - "ghcr.io/tinted-theming/base16-builder-go:{{ .Tag }}"
   - "ghcr.io/tinted-theming/base16-builder-go:v{{ .Major }}.{{ .Minor }}"

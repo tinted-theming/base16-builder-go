@@ -47,7 +47,7 @@ func init() {
 func getSchemesFromGithub() (fs.FS, error) {
 	log.Info("Attempting to load schemes from GitHub")
 
-	r, err := http.Get("https://github.com/base16-project/base16-schemes/archive/refs/heads/main.tar.gz")
+	r, err := http.Get("https://github.com/tinted-theming/base16-schemes/archive/refs/heads/main.tar.gz")
 	if err != nil {
 		return nil, err
 	}

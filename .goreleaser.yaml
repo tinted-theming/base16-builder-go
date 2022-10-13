@@ -12,9 +12,9 @@ builds:
 dockers:
 -
   image_templates:
-  - "ghcr.io/base16-project/base16-builder-go:{{ .Tag }}"
-  - "ghcr.io/base16-project/base16-builder-go:v{{ .Major }}.{{ .Minor }}"
-  - "ghcr.io/base16-project/base16-builder-go:latest"
+  - "ghcr.io/tinted-theming/base16-builder-go:{{ .Tag }}"
+  - "ghcr.io/tinted-theming/base16-builder-go:v{{ .Major }}.{{ .Minor }}"
+  - "ghcr.io/tinted-theming/base16-builder-go:latest"
   extra_files:
   - entrypoint.sh
 archives:

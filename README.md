@@ -3,7 +3,7 @@
 A simple builder for base16 templates and schemes.
 
 This currently implements version 0.10.0 of the
-[base16 spec](https://github.com/base16-project/base16).
+[base16 spec](https://github.com/tinted-theming/home).
 
 ## Building
 
@@ -15,7 +15,7 @@ repo needs to be cloned before building.
 The following command will clone the schemes directory
 
 ```
-$ git clone https://github.com/base16-project/base16-schemes.git schemes
+$ git clone https://github.com/tinted-theming/base16-schemes.git schemes
 ```
 
 Now that the repo is cloned, you can use `go build` to create a binary. You may

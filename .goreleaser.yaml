@@ -20,16 +20,29 @@ dockers:
   - entrypoint.sh
   build_flag_templates:
   - "--platform=linux/amd64"
+-
+  goos: linux
+  goarch: arm64
+  use: buildx
+  image_templates:
+  - "ghcr.io/tinted-theming/base16-builder-go:{{ .Tag }}-arm64"
+  extra_files:
+  - entrypoint.sh
+  build_flag_templates:
+  - "--platform=linux/arm64/v8"
 docker_manifests:
 - name_template: "ghcr.io/tinted-theming/base16-builder-go:{{ .Tag }}"
   image_templates:
   - "ghcr.io/tinted-theming/base16-builder-go:{{ .Tag }}-amd64"
+  - "ghcr.io/tinted-theming/base16-builder-go:{{ .Tag }}-arm64"
 - name_template: "ghcr.io/tinted-theming/base16-builder-go:v{{ .Major }}.{{ .Minor }}"
   image_templates:
   - "ghcr.io/tinted-theming/base16-builder-go:{{ .Tag }}-amd64"
+  - "ghcr.io/tinted-theming/base16-builder-go:{{ .Tag }}-arm64"
 - name_template: "ghcr.io/tinted-theming/base16-builder-go:latest"
   image_templates:
   - "ghcr.io/tinted-theming/base16-builder-go:{{ .Tag }}-amd64"
+  - "ghcr.io/tinted-theming/base16-builder-go:{{ .Tag }}-arm64"
 archives:
 - format: binary
   replacements:

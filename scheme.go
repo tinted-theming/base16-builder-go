@@ -14,6 +14,7 @@ type ColorScheme struct {
 	Author      string
 	Slug        string
 	Description string
+	Variant     string
 	Palette     map[string]color
 }
 
@@ -24,8 +25,13 @@ func (s *ColorScheme) TemplateVariables() map[string]interface{} {
 		"scheme-slug":             s.Slug,
 		"scheme-system":           s.System,
 		"scheme-description":      s.Description,
+		"scheme-variant":          s.Variant,
 		"scheme-slug-underscored": strings.Replace(s.Slug, "-", "_", -1),
 	}
+
+	ret["scheme-is-light-variant"] = s.Variant == "light"
+	ret["scheme-is-dark-variant"] = s.Variant == "dark"
+	ret[fmt.Sprintf("scheme-is-%s-variant", s.Variant)] = true
 
 	for colorKey, colorVal := range s.Palette {
 		// Note that we only lowercase the output of this to match the reference

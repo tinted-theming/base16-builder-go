@@ -13,12 +13,12 @@ import (
 )
 
 type template struct {
-	Name      string   `yaml:"-"`
-	Dir       string   `yaml:"-"`
-	Filename  string   `yaml:"filename"`
-	Extension string   `yaml:"extension"`
-	OutputDir string   `yaml:"output"`
-	Systems   []string `yaml:"systems"`
+	Name             string   `yaml:"-"`
+	Dir              string   `yaml:"-"`
+	Filename         string   `yaml:"filename"`
+	Extension        string   `yaml:"extension"`
+	OutputDir        string   `yaml:"output"`
+	SupportedSystems []string `yaml:"supported-systems"`
 }
 
 func templatesFromFile(templatesDir string) ([]*template, error) {
@@ -53,9 +53,9 @@ func templatesFromFile(templatesDir string) ([]*template, error) {
 			t.Filename = fmt.Sprintf("%s/{{ scheme-system }}-{{ scheme-slug }}%s", t.OutputDir, t.Extension)
 		}
 
-		if len(t.Systems) == 0 {
+		if len(t.SupportedSystems) == 0 {
 			log.Warn("Systems not set in theme config block, inferring base16")
-			t.Systems = []string{"base16"}
+			t.SupportedSystems = []string{"base16"}
 		}
 
 		log.Debugf("Found template %q in dir %q", t.Name, t.Dir)
@@ -92,7 +92,7 @@ func (t *template) Render(schemes []*ColorScheme) error {
 
 		// If the scheme's system wasn't in this template's supported systems
 		// list, we skip it.
-		if !slices.Contains(t.Systems, scheme.System) {
+		if !slices.Contains(t.SupportedSystems, scheme.System) {
 			continue
 		}
 

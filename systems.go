@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
-	"path/filepath"
 	"strings"
 
 	"github.com/hashicorp/go-multierror"
@@ -31,10 +30,10 @@ func LoadScheme(schemesFS fs.FS, filename string) (*ColorScheme, error) {
 	// If no system is specified, it can be loaded as a legacy scheme
 	// (base16/base24).
 	if baseScheme.System == "" {
-		return LoadLegacyScheme(filename, data)
+		return LoadLegacyScheme(data)
 	}
 
-	return LoadUniversalScheme(filename, data)
+	return LoadUniversalScheme(data)
 }
 
 var base16Bases = []string{
@@ -50,10 +49,12 @@ type legacyScheme struct {
 	Name        string           `yaml:"scheme"`
 	Author      string           `yaml:"author"`
 	Description string           `yaml:"description"`
+	Variant     string           `yaml:"variant"`
+	Slug        string           `yaml:"slug"`
 	Palette     map[string]color `yaml:",inline"`
 }
 
-func LoadLegacyScheme(filename string, data []byte) (*ColorScheme, error) {
+func LoadLegacyScheme(data []byte) (*ColorScheme, error) {
 	var scheme legacyScheme
 	err := yaml.Unmarshal(data, &scheme)
 	if err != nil {
@@ -89,9 +90,17 @@ func LoadLegacyScheme(filename string, data []byte) (*ColorScheme, error) {
 	ret := &ColorScheme{
 		Name:        scheme.Name,
 		Author:      scheme.Author,
-		Slug:        filepath.Base(strings.TrimSuffix(filename, ".yaml")),
+		Slug:        scheme.Slug,
 		Description: scheme.Description,
+		Variant:     scheme.Variant,
 		Palette:     scheme.Palette,
+	}
+
+	if ret.Slug == "" {
+		ret.Slug, err = Slugify(ret.Name)
+		if err != nil {
+			return nil, fmt.Errorf("Failed to slugify name: %e", err)
+		}
 	}
 
 	if len(ret.Palette) == 16 {
@@ -116,13 +125,12 @@ type universalScheme struct {
 	Author      string            `yaml:"author"`
 	System      string            `yaml:"system"`
 	Description string            `yaml:"description"`
+	Variant     string            `yaml:"variant"`
 	Palette     map[string]color  `yaml:"palette"`
 	Mappings    map[string]string `yaml:"mappings"`
 }
 
-func LoadUniversalScheme(filename string, data []byte) (*ColorScheme, error) {
-	logger := log.WithField("file", filename)
-
+func LoadUniversalScheme(data []byte) (*ColorScheme, error) {
 	var scheme universalScheme
 
 	err := yaml.Unmarshal(data, &scheme)
@@ -136,13 +144,14 @@ func LoadUniversalScheme(filename string, data []byte) (*ColorScheme, error) {
 		Author:      scheme.Author,
 		System:      scheme.System,
 		Description: scheme.Description,
+		Variant:     scheme.Variant,
 		Palette:     scheme.Palette,
 	}
 
-	// Missing the author field is a warning because there appear to be some
-	// themes without them.
+	// Missing the author field is a warning, not an error because there appear
+	// to be some pre-existing themes without them.
 	if ret.Author == "" {
-		logger.Warn("Scheme author should not be empty")
+		log.Warn("Scheme author should not be empty")
 	}
 
 	// If we have an empty slug, we need to infer it from the scheme name. This

@@ -12,7 +12,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-//go:embed schemes/*/*.yaml
+//go:embed schemes/*.yaml
 var schemesFS embed.FS
 
 var (

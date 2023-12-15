@@ -31,7 +31,9 @@ func (s *ColorScheme) TemplateVariables() map[string]interface{} {
 
 	ret["scheme-is-light-variant"] = s.Variant == "light"
 	ret["scheme-is-dark-variant"] = s.Variant == "dark"
-	ret[fmt.Sprintf("scheme-is-%s-variant", s.Variant)] = true
+	if s.Variant != "" {
+		ret[fmt.Sprintf("scheme-is-%s-variant", s.Variant)] = true
+	}
 
 	for colorKey, colorVal := range s.Palette {
 		// Note that we only lowercase the output of this to match the reference

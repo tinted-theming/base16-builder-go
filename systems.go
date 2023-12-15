@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
+	"path/filepath"
 	"strings"
 
 	"github.com/hashicorp/go-multierror"
@@ -27,13 +28,13 @@ func LoadScheme(schemesFS fs.FS, filename string) (*ColorScheme, error) {
 		return nil, err
 	}
 
-	// If no system is specified, it can be loaded as a legacy scheme
+	// If no system is specified, it should be loaded as a legacy scheme
 	// (base16/base24).
 	if baseScheme.System == "" {
-		return LoadLegacyScheme(data)
+		return LoadLegacyScheme(filename, data)
 	}
 
-	return LoadUniversalScheme(data)
+	return LoadCommonScheme(data)
 }
 
 var base16Bases = []string{
@@ -49,12 +50,10 @@ type legacyScheme struct {
 	Name        string           `yaml:"scheme"`
 	Author      string           `yaml:"author"`
 	Description string           `yaml:"description"`
-	Variant     string           `yaml:"variant"`
-	Slug        string           `yaml:"slug"`
 	Palette     map[string]color `yaml:",inline"`
 }
 
-func LoadLegacyScheme(data []byte) (*ColorScheme, error) {
+func LoadLegacyScheme(filename string, data []byte) (*ColorScheme, error) {
 	var scheme legacyScheme
 	err := yaml.Unmarshal(data, &scheme)
 	if err != nil {
@@ -90,17 +89,9 @@ func LoadLegacyScheme(data []byte) (*ColorScheme, error) {
 	ret := &ColorScheme{
 		Name:        scheme.Name,
 		Author:      scheme.Author,
-		Slug:        scheme.Slug,
+		Slug:        filepath.Base(strings.TrimSuffix(filename, ".yaml")),
 		Description: scheme.Description,
-		Variant:     scheme.Variant,
 		Palette:     scheme.Palette,
-	}
-
-	if ret.Slug == "" {
-		ret.Slug, err = Slugify(ret.Name)
-		if err != nil {
-			return nil, fmt.Errorf("Failed to slugify name: %e", err)
-		}
 	}
 
 	if len(ret.Palette) == 16 {
@@ -119,7 +110,7 @@ func LoadLegacyScheme(data []byte) (*ColorScheme, error) {
 	return ret, nil
 }
 
-type universalScheme struct {
+type commonScheme struct {
 	Slug        string            `yaml:"slug"`
 	Name        string            `yaml:"name"`
 	Author      string            `yaml:"author"`
@@ -130,8 +121,8 @@ type universalScheme struct {
 	Mappings    map[string]string `yaml:"mappings"`
 }
 
-func LoadUniversalScheme(data []byte) (*ColorScheme, error) {
-	var scheme universalScheme
+func LoadCommonScheme(data []byte) (*ColorScheme, error) {
+	var scheme commonScheme
 
 	err := yaml.Unmarshal(data, &scheme)
 	if err != nil {

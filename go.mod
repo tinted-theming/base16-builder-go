@@ -1,4 +1,4 @@
-module github.com/belak/base16-builder-go
+module github.com/tinted-theming/base16-builder-go
 
 go 1.18
 

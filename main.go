@@ -12,7 +12,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-//go:embed schemes/*.yaml
+//go:embed schemes/*/*.yaml
 var schemesFS embed.FS
 
 var (
@@ -64,7 +64,7 @@ func getSchemesFromGithub() (fs.FS, error) {
 
 	// The archive has a subfolder containing all the schemes, so we return a
 	// subfs of the folder.
-	return fs.Sub(targetFS, "base16-schemes-main")
+	return fs.Sub(targetFS, "schemes-spec-0.11")
 }
 
 func main() {

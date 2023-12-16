@@ -6,4 +6,4 @@ inputs:
     required: false
 runs:
   using: 'docker'
-  image: 'docker://ghcr.io/tinted-theming/base16-builder-go:v0.2.8'
+  image: 'docker://ghcr.io/tinted-theming/base16-builder-go:v0.3.0'

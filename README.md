@@ -2,25 +2,23 @@
 
 A simple builder for base16 templates and schemes.
 
-This currently implements version 0.10.0 of the
-[base16 spec](https://github.com/tinted-theming/home).
+This currently implements version 0.11.0 of the [base16 spec](https://github.com/tinted-theming/home).
 
 ## Building
 
 Currently version 1.16 or higher of the Go compiler is needed.
 
 Unfortunately, because the schemes are stored in a separate repo, the schemes
-repo needs to be cloned before building.
+submodule needs to be cloned before building.
 
 The following command will clone the schemes directory
 
 ```
-$ git clone https://github.com/tinted-theming/base16-schemes.git schemes
+$ git submodule update --init
 ```
 
 Now that the repo is cloned, you can use `go build` to create a binary. You may
-wish to update the schemes dir to get new included schemes. In the future this
-will most likely be provided as a submodule, updated on a regular basis.
+wish to update the schemes dir to get new included schemes.
 
 ## Commands
 
@@ -37,14 +35,3 @@ Usage of base16-builder-go:
   -verbose
     	Log all debug messages
 ```
-
-## Notes
-
-I'm open to making a few template-specific tweaks as long as they'll be useful
-to other templates. Below is a listing of the additions to the base16 spec which
-this builder supports.
-
-### Additional variables
-
-* `scheme-slug-underscored` - A version of the scheme slug where dashes have
-  been replaced with underscores.

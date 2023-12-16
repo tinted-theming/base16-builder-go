@@ -12,7 +12,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-//go:embed schemes/*.yaml
+//go:embed schemes/*/*.yaml
 var schemesFS embed.FS
 
 var (
@@ -29,7 +29,7 @@ var (
 	version     = "dev"
 	commit      = "unknown"
 	date        = "unknown"
-	specVersion = "0.10.1"
+	specVersion = "0.11.0"
 )
 
 func init() {
@@ -47,7 +47,7 @@ func init() {
 func getSchemesFromGithub() (fs.FS, error) {
 	log.Info("Attempting to load schemes from GitHub")
 
-	r, err := http.Get("https://github.com/tinted-theming/base16-schemes/archive/refs/heads/main.tar.gz")
+	r, err := http.Get("https://github.com/tinted-theming/schemes/archive/refs/heads/spec-0.11.tar.gz")
 	if err != nil {
 		return nil, err
 	}
@@ -64,7 +64,7 @@ func getSchemesFromGithub() (fs.FS, error) {
 
 	// The archive has a subfolder containing all the schemes, so we return a
 	// subfs of the folder.
-	return fs.Sub(targetFS, "base16-schemes-main")
+	return fs.Sub(targetFS, "schemes-spec-0.11")
 }
 
 func main() {

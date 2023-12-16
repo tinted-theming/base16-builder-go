@@ -1,7 +1,6 @@
 project_name: base16-builder-go
 builds:
-- main: ./cmd/base16-builder-go
-  env:
+- env:
   - CGO_ENABLED=0
   goos:
   - linux
@@ -13,8 +12,6 @@ builds:
 
 archives:
 - format: binary
-  replacements:
-    amd64: x86_64
 snapshot:
   name_template: "{{ incpatch .Version }}-next"
 changelog:

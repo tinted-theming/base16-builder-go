@@ -25,13 +25,13 @@ changelog:
 # we're linking them into. We start off by specifying an image for each platform
 # we're building for.
 dockers:
-- image_templates: ["ghcr.io/base16-project/base16-builder-go:{{ .Version }}-amd64"]
+- image_templates: ["ghcr.io/tinted-theming/base16-builder-go:{{ .Version }}-amd64"]
   use: buildx
   build_flag_templates:
   - --platform=linux/amd64
   extra_files:
   - entrypoint.sh
-- image_templates: ["ghcr.io/base16-project/base16-builder-go:{{ .Version }}-arm64"]
+- image_templates: ["ghcr.io/tinted-theming/base16-builder-go:{{ .Version }}-arm64"]
   goarch: arm64
   use: buildx
   build_flag_templates:
@@ -42,15 +42,15 @@ dockers:
 # The manifests link together multiple built images as a single tag. This lets
 # us bundle both an amd64 and arm64 version of the same image as the same tag.
 docker_manifests:
-- name_template: "ghcr.io/base16-project/base16-builder-go:{{ .Tag }}"
+- name_template: "ghcr.io/tinted-theming/base16-builder-go:{{ .Tag }}"
   image_templates:
-  - "ghcr.io/base16-project/base16-builder-go:{{ .Version }}-amd64"
-  - "ghcr.io/base16-project/base16-builder-go:{{ .Version }}-arm64"
-- name_template: "ghcr.io/base16-project/base16-builder-go:v{{ .Major }}.{{ .Minor }}"
+  - "ghcr.io/tinted-theming/base16-builder-go:{{ .Version }}-amd64"
+  - "ghcr.io/tinted-theming/base16-builder-go:{{ .Version }}-arm64"
+- name_template: "ghcr.io/tinted-theming/base16-builder-go:v{{ .Major }}.{{ .Minor }}"
   image_templates:
-  - "ghcr.io/base16-project/base16-builder-go:{{ .Version }}-amd64"
-  - "ghcr.io/base16-project/base16-builder-go:{{ .Version }}-arm64"
-- name_template: "ghcr.io/base16-project/base16-builder-go:latest"
+  - "ghcr.io/tinted-theming/base16-builder-go:{{ .Version }}-amd64"
+  - "ghcr.io/tinted-theming/base16-builder-go:{{ .Version }}-arm64"
+- name_template: "ghcr.io/tinted-theming/base16-builder-go:latest"
   image_templates:
-  - "ghcr.io/base16-project/base16-builder-go:{{ .Version }}-amd64"
-  - "ghcr.io/base16-project/base16-builder-go:{{ .Version }}-arm64"
+  - "ghcr.io/tinted-theming/base16-builder-go:{{ .Version }}-amd64"
+  - "ghcr.io/tinted-theming/base16-builder-go:{{ .Version }}-arm64"

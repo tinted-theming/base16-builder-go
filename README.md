@@ -20,6 +20,16 @@ $ git submodule update --init
 Now that the repo is cloned, you can use `go build` to create a binary. You may
 wish to update the schemes dir to get new included schemes.
 
+## Install
+
+### Arch Linux
+
+```
+yay base16-builder-go
+```
+
+Available as command after installation: `base16-builder`
+
 ## Commands
 
 By default, this builder will build the template in the the current directory

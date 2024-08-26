@@ -66,11 +66,20 @@ func loadSchemes(schemesFS fs.FS) ([]*ColorScheme, bool) {
 			return err
 		}
 
+		filename := d.Name()
+
+		if strings.HasPrefix(filename, ".") {
+			if d.IsDir() {
+				return fs.SkipDir
+			}
+
+			return nil
+		}
+
 		if d.IsDir() {
 			return nil
 		}
 
-		filename := d.Name()
 		if !strings.HasSuffix(filename, ".yaml") {
 			return nil
 		}

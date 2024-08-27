@@ -1,3 +1,5 @@
+version: 2
+
 project_name: base16-builder-go
 builds:
 - env:
